@@ -59,6 +59,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent)  {
       e.getMessage match {
         case "SUCCESS" =>
+          prepareQuery(ctx)
           handshake.success("SUCCESS")
         case handshakeResult: String =>
           handshake.failure(new RethinkError(handshakeResult.toString))
@@ -67,7 +68,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       }
     }
 
-    private def prepareReceiveMessage(ctx: ChannelHandlerContext) {
+    private def prepareQuery(ctx: ChannelHandlerContext) {
       val pipeline = ctx.getPipeline()
       pipeline.replace(frameDecoderName, frameDecoderName, new LengthFieldBasedFrameDecoder(1000 * 1024, 0 , 4, 0, 4))
       pipeline.replace(messageDecoderName, frameDecoderName, new ProtobufDecoder(Response.getDefaultInstance()))
