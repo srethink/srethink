@@ -86,7 +86,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
 
     private def sendHandshake(channel: Channel) {
       import config._
-      val authKeySize = authenticationKey.getBytes.length
+      val authKeySize = authenticationKey.getBytes("ascii").length
       val bufSize = 4 + 4 + authKeySize
       val buf = ChannelBuffers.buffer(ChannelBuffers.LITTLE_ENDIAN, bufSize)
       buf.writeInt(magic)

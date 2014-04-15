@@ -153,8 +153,8 @@ final case class Query (
       case 0 => return __newMerged
       case 8 => __type = Some(Query.QueryType.valueOf(in.readEnum()))
       case 18 => __query = Some(readMessage[Term](in, __query.orElse({
-	__query = Term.defaultInstance
-	__query
+        __query = Term.defaultInstance
+        __query
       }).get, _emptyRegistry))
       case 24 => __token = Some(in.readInt64())
       case 32 => __OBSOLETENoreply = Some(in.readBool())
@@ -267,25 +267,25 @@ object Query {
       var __val: Option[Term] = `val`
 
       def __newMerged = AssocPair(
-	__key,
-	__val
+        __key,
+        __val
       )
       while (true) in.readTag match {
-	case 0 => return __newMerged
-	case 10 => __key = Some(in.readString())
-	case 18 => __val = Some(readMessage[Term](in, __val.orElse({
-	  __val = Term.defaultInstance
-	  __val
-	}).get, _emptyRegistry))
-	case default => if (!in.skipField(default)) return __newMerged
+        case 0 => return __newMerged
+        case 10 => __key = Some(in.readString())
+        case 18 => __val = Some(readMessage[Term](in, __val.orElse({
+          __val = Term.defaultInstance
+          __val
+        }).get, _emptyRegistry))
+        case default => if (!in.skipField(default)) return __newMerged
       }
       null
     }
 
     def mergeFrom(m: AssocPair) = {
       AssocPair(
-	m.`key`.orElse(`key`),
-	m.`val`.orElse(`val`)
+        m.`key`.orElse(`key`),
+        m.`val`.orElse(`val`)
       )
     }
 
@@ -570,12 +570,12 @@ final case class Response (
       case 16 => __token = Some(in.readInt64())
       case 26 => __response += readMessage[Datum](in, Datum.defaultInstance, _emptyRegistry)
       case 34 => __backtrace = Some(readMessage[Backtrace](in, __backtrace.orElse({
-	__backtrace = Backtrace.defaultInstance
-	__backtrace
+        __backtrace = Backtrace.defaultInstance
+        __backtrace
       }).get, _emptyRegistry))
       case 42 => __profile = Some(readMessage[Datum](in, __profile.orElse({
-	__profile = Datum.defaultInstance
-	__profile
+        __profile = Datum.defaultInstance
+        __profile
       }).get, _emptyRegistry))
       case default => if (!in.skipField(default)) return __newMerged
     }
@@ -852,25 +852,25 @@ object Datum {
       var __val: Option[Datum] = `val`
 
       def __newMerged = AssocPair(
-	__key,
-	__val
+        __key,
+        __val
       )
       while (true) in.readTag match {
-	case 0 => return __newMerged
-	case 10 => __key = Some(in.readString())
-	case 18 => __val = Some(readMessage[Datum](in, __val.orElse({
-	  __val = Datum.defaultInstance
-	  __val
-	}).get, _emptyRegistry))
-	case default => if (!in.skipField(default)) return __newMerged
+        case 0 => return __newMerged
+        case 10 => __key = Some(in.readString())
+        case 18 => __val = Some(readMessage[Datum](in, __val.orElse({
+          __val = Datum.defaultInstance
+          __val
+        }).get, _emptyRegistry))
+        case default => if (!in.skipField(default)) return __newMerged
       }
       null
     }
 
     def mergeFrom(m: AssocPair) = {
       AssocPair(
-	m.`key`.orElse(`key`),
-	m.`val`.orElse(`val`)
+        m.`key`.orElse(`key`),
+        m.`val`.orElse(`val`)
       )
     }
 
@@ -963,8 +963,8 @@ final case class Term (
       case 0 => return __newMerged
       case 8 => __type = Some(Term.TermType.valueOf(in.readEnum()))
       case 18 => __datum = Some(readMessage[Datum](in, __datum.orElse({
-	__datum = Datum.defaultInstance
-	__datum
+        __datum = Datum.defaultInstance
+        __datum
       }).get, _emptyRegistry))
       case 26 => __args += readMessage[Term](in, Term.defaultInstance, _emptyRegistry)
       case 34 => __optargs += readMessage[Term.AssocPair](in, Term.AssocPair.defaultInstance, _emptyRegistry)
@@ -1482,25 +1482,25 @@ object Term {
       var __val: Option[Term] = `val`
 
       def __newMerged = AssocPair(
-	__key,
-	__val
+        __key,
+        __val
       )
       while (true) in.readTag match {
-	case 0 => return __newMerged
-	case 10 => __key = Some(in.readString())
-	case 18 => __val = Some(readMessage[Term](in, __val.orElse({
-	  __val = Term.defaultInstance
-	  __val
-	}).get, _emptyRegistry))
-	case default => if (!in.skipField(default)) return __newMerged
+        case 0 => return __newMerged
+        case 10 => __key = Some(in.readString())
+        case 18 => __val = Some(readMessage[Term](in, __val.orElse({
+          __val = Term.defaultInstance
+          __val
+        }).get, _emptyRegistry))
+        case default => if (!in.skipField(default)) return __newMerged
       }
       null
     }
 
     def mergeFrom(m: AssocPair) = {
       AssocPair(
-	m.`key`.orElse(`key`),
-	m.`val`.orElse(`val`)
+        m.`key`.orElse(`key`),
+        m.`val`.orElse(`val`)
       )
     }
 
@@ -1530,7 +1530,6 @@ object Term {
 
     def newBuilder = defaultInstance.newBuilderForType
     def newBuilder(prototype: AssocPair) = defaultInstance.mergeFrom(prototype)
-
   }
 }
 
