@@ -32,16 +32,18 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   }
 
   def connect() = {
-    val channelFuture = bootstrap.connect(new java.net.InetSocketAddress(config.hostname, config.port))
+    val channelFuture = createBootstrap().connect(new java.net.InetSocketAddress(config.hostname, config.port))
     channel = Some(channelFuture.getChannel)
     channelFuture.sync()
   }
 
   private def createBootstrap() = {
     val channelFactory = new NioClientSocketChannelFactory(
-      config.bossExecutor, config.workerExecutor
-    )
-    new ClientBootstrap(channelFactory)
+      config.bossExecutor, config.workerExecutor)
+    val bootstrap = new ClientBootstrap(channelFactory)
+    val bufferFactory = new HeapChannelBufferFactory(java.nio.ByteOrder.LITTLE_ENDIAN)
+    bootstrap.setOption("bufferFactory", bufferFactory)
+    bootstrap
   }
 
   class RethinkHandler extends SimpleChannelUpstreamHandler {
