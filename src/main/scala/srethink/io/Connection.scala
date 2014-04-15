@@ -1,5 +1,17 @@
 package srethink.io
 
+import scala.concurrent.Future
+import srethink.protocol._
+import srethink.core._
+
+
 trait Connection {
-  def connect(config: HostConfig)
+
+  val config: RethinkConfig
+
+  def connect()
+
+  def query(query: Query): Future[Response]
+
+  def close()
 }

@@ -3,14 +3,10 @@
 
 package srethink.protocol
 
-final case class VersionDummy (
-
-) extends com.google.protobuf.GeneratedMessageLite
+final case class VersionDummy() extends com.google.protobuf.GeneratedMessageLite
     with com.google.protobuf.MessageLite.Builder
     with net.sandrogrzicic.scalabuff.Message[VersionDummy]
     with net.sandrogrzicic.scalabuff.Parser[VersionDummy] {
-
-
 
   def writeTo(output: com.google.protobuf.CodedOutputStream) {
   }
@@ -36,9 +32,7 @@ final case class VersionDummy (
   }
 
   def mergeFrom(m: VersionDummy) = {
-    VersionDummy(
-
-    )
+    VersionDummy()
   }
 
   def getDefaultInstanceForType = VersionDummy.defaultInstance
