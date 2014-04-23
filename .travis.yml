@@ -1,0 +1,13 @@
+language: scala
+before_script:
+  - sudo add-apt-repository ppa:rethinkdb/ppa
+  - sudo apt-get update -q
+  - sudo apt-get install rethinkdb
+  - sudo /etc/init.d/rethinkdb start
+scala:
+  - 2.10.4
+jdk:
+  - oraclejdk7
+  - openjdk6
+
+script: sbt ++$TRAVIS_SCALA_VERSION check-gen-type-classes test
