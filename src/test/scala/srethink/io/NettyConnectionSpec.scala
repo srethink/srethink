@@ -16,7 +16,7 @@ class NettyConnectionSpec extends Specification {
 
   val cfg = NettyRethinkConfig(
     hostname = "localhost",
-    port = 28016,
+    port = 28015,
     magic = VersionDummy.Version.V0_2_VALUE,
     authenticationKey = "",
     bossExecutor = Executors.newCachedThreadPool(),
