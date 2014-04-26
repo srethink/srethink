@@ -10,22 +10,21 @@ trait Encoder[T] {
   def encode(t: T): Datum
 }
 
-trait Codec[T] extends Decoder with Encoder
+trait Codec[T] extends Decoder[T] with Encoder[T]
 
 trait JsonStringDecoder extends Decoder[String] {
 
   def decode(data: Datum) = {
-    require(data.`type` == Datum.DatumType.EnumVal.R_JSON)
-    data.rStr
+    require(data.`type` == Some(Datum.DatumType.R_JSON))
+    data.rStr.get
   }
-
 }
 
 trait JsonStringEncoder extends Decoder[String] {
 
   def encode(t: String) = {
     Datum(
-      `type` = Datum.DatumType.EnumVal.R_JSON,
+      `type` = Some(Datum.DatumType.R_JSON),
       rStr = Some(t)
     )
   }
@@ -33,9 +32,4 @@ trait JsonStringEncoder extends Decoder[String] {
 
 object Codecs {
   implicit object JsonStringCodec extends JsonStringDecoder with JsonStringEncoder
-}
-
-
-object Codecs {
-
 }

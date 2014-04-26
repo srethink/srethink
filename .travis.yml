@@ -1,0 +1,21 @@
+language: scala
+
+before_install:
+  - sudo add-apt-repository ppa:rethinkdb/ppa -y
+  - sudo apt-get update -q
+
+install:
+  - sudo apt-get install rethinkdb
+
+before_script:
+  - sudo cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/default.conf
+  - sudo /etc/init.d/rethinkdb start
+  
+scala:
+  - 2.10.4
+  
+jdk:
+  - oraclejdk7
+  - openjdk6
+
+script: sbt ++$TRAVIS_SCALA_VERSION test
