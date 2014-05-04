@@ -112,7 +112,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       val bufSize = 4 + 4 + authKey.length
       val buf = ChannelBuffers.buffer(ChannelBuffers.LITTLE_ENDIAN, bufSize)
       buf.writeInt(magic)
-      buf.writeInt(authKeySize)
+      buf.writeInt(authKey.length)
       buf.writeBytes(authKey)
       channel.write(buf)
     }

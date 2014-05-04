@@ -34,6 +34,7 @@ class NettyConnectionSpec extends Specification {
     Query(
       `token` = Some(tokenGen.incrementAndGet()),
       `type` = Some(Query.QueryType.START),
+      `acceptsRJson` = Some(true),
       `query` = Some(
         Term(
           `type` = Some(Term.TermType.DB_CREATE),
