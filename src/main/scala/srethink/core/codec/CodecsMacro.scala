@@ -12,20 +12,28 @@ object CodecsMacro {
   def encoderImpl[T: c.WeakTypeTag](c: Context): c.Expr[DatumEncoder[T]]  = {
     import c.universe._
     val tpe = weakTypeOf[T]
-    val pairs =  weakTypeOf[T].declarations.collect {
-      case m: MethodSymbol if m.isCaseAccessor =>
-        val name = c.literal(m.name.decoded)
-        val value = q"t.$m.name"
-        val valueType = m.returnType
-        val encoderType = appliedType(weakTypeOf[DatumEncoder[Any]].typeConstructor, valueType :: Nil )
-        val neededImplicit = c.inferImplicitValue(encoderType)
-        val encodedValue = q"neededImplicit.encode($value)"
-        q"Datum.AssocPair(Some($name), Some($encodedValue))"
+    val tree =  weakTypeOf[T].declarations.collect {
+      case m: MethodSymbol if m.isCaseAccessor => m
     }
-    val encodedValue = q"Datum(Some(Datum.DatumType.R_OBJECT), Some(pairs))"
-    val method = q"def encode(t: $tpe) = $encodedValue"
+
+
+    val pairs = tree.foldLeft(q"Seq[Datum.AssocPair]()") {
+      case (pairsTree, accessorTree) =>
+        val valueType = accessorTree.returnType
+        val encoderType = tq"DatumEncoder[$valueType]"
+        val encoder = c.inferImplicitValue(encoderType.tpe)
+        if(encoder == EmptyTree) {
+          c.abort(c.enclosingPosition, s"No implicit encoder for ${encoderType}")
+        }
+        val value = q"t.$accessorTree"
+        q"$pairsTree :+ Datum.AssocPair(Some(accessorTree.name), $encoder.encode($value) )"
+    }
+
+    val encodedDatum = q"Datum(`type` = Some(Datum.DatumType.R_OBJECT), rObject = $pairs )"
+    val method = q"def encode(t: $tpe) = $encodedDatum"
 
     c.Expr[DatumEncoder[T]](q"""
+     import srethink.protocol._
      new DatumEncoder[$tpe] {
        def encode(t: $tpe) = $method
      }""")
