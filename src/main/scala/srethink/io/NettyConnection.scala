@@ -86,7 +86,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
           connected = true
           handshake.success("SUCCESS")
         case handshakeResult: String =>
-          handshake.failure(new RethinkError(handshakeResult.toString))
+          handshake.failure(new ConnectionError(handshakeResult.toString))
         case response: Response =>
           responseMap(response.token.get).success(response)
       }

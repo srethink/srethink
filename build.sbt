@@ -13,6 +13,6 @@ libraryDependencies ++= Seq(
   "org.scalamacros" %% "quasiquotes" % "2.0.0",
   "org.specs2" %% "specs2" % "2.3.11" % "test")
 
-scalacOptions ++= Seq("-feature", "-deprecation")
+scalacOptions ++= Seq("-feature", "-deprecation", "-language:implicitConversions")
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full)

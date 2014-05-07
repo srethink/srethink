@@ -49,7 +49,6 @@ trait Terms {
 
 trait Datums {
 
-
   def strDatum(value: String) = {
     Datum(
       `type` = Some(Datum.DatumType.R_STR), `rStr` = Some(value))
@@ -67,6 +66,17 @@ trait Datums {
     Datum(`type` = Some(Datum.DatumType.R_OBJECT), rObject = value)
   }
 
+  def arrDatum(values: Seq[Datum]) = {
+    Datum(`type` = Some(Datum.DatumType.R_ARRAY), rArray = values)
+  }
+
+  def nullDatum() = {
+    Datum(`type` = Some(Datum.DatumType.R_NULL))
+  }
+
+  def assocPair(name: String, value: Datum) = {
+    Datum.AssocPair(Some(name), Some(value))
+  }
 }
 
 trait Queries {

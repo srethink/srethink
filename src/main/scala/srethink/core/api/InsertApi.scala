@@ -5,8 +5,6 @@ import srethink.core.codec._
 
 trait InsertApi {
 
-  this: JsonTypes =>
-
   case class InsertResult(
     deleted: Int,
     errors: Int,

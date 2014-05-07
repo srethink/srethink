@@ -1,16 +1,12 @@
 package srethink.core
 
-
-trait Api[T]
-
-case class DBCreate(dbName: String) extends Api[Boolean]
-
-trait JsonTypes {
-  type JsonArray
-  type JsonObject
+/**
+ * type R : api return type
+ */
+trait Api[R] {
 }
 
-trait ApiConstants {
+object Api {
 
   object Durablity {
     val Hard = "hard"
