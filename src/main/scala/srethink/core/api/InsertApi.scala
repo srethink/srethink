@@ -1,5 +1,8 @@
 package srethink.core
 
+import scala.collection.immutable._
+import srethink.core.codec._
+
 trait InsertApi {
 
   this: JsonTypes =>
@@ -18,16 +21,20 @@ trait InsertApi {
     returnVals: Boolean,
     upsert: Boolean)
 
-  case class Insert(
+  case class Insert[T](
     table: String,
-    data: JsonArray,
+    data: Seq[T],
     options: Option[InsertOptions] = None
   ) extends Api[InsertResult]
 
-  implicit object InsertEncoder extends QueryEncoder[Insert] {
+  implicit def insertEncoder[T: DatumEncoder] = new  QueryEncoder[Insert[T]] {
     import CodecHelper._
-    def encode(token: Long, api: Insert) = {
-      ???
+    def encode(token: Long, api: Insert[T]) = {
+      val encoder = implicitly[DatumEncoder[T]]
+      val datumTerms = api.data.map { data =>
+        datumTerm(encoder.encode(data))
+      }
+      startQuery(token, insertTerm(api.table, datumTerms))
     }
   }
 }

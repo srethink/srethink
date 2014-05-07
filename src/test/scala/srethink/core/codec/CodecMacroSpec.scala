@@ -16,7 +16,7 @@ case class MacroSpecBar(
 class CodecMacroSpec extends Specification {
 
   implicit object IntEncoder extends DatumEncoder[Int] {
-    def encode(i: Int) = intDatum(i)
+    def encode(i: Int) = numDatum(i)
   }
 
   "encoder macro" should {
@@ -24,7 +24,7 @@ class CodecMacroSpec extends Specification {
       val en = CodecMacro.encoder[MacroSpecFoo]
       val pairs = en.encode(MacroSpecFoo(1)).rObject
       pairs must have size(1)
-      pairs(0).`val` must beSome(intDatum(1))
+      pairs(0).`val` must beSome(numDatum(1))
     }
   }
 }
