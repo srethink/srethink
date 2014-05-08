@@ -80,7 +80,7 @@ class NettyConnectionSpec extends Specification {
   "connection" should  {
     "connect to server" in new WithConn {
       //wait connection success
-      Thread.sleep(100)
+      Thread.sleep(1000)
       connection.isConnected must beEqualTo(true)
     }
 
