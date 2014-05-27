@@ -1,7 +1,7 @@
 package srethink.core
 
-import srethink.protocol._
 import scala.collection.immutable._
+import srethink.protocol._
 
 trait DatumDecoder[+T] {
   def decode(data: Datum): T

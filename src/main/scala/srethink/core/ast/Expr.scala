@@ -2,9 +2,6 @@ package srethink.core.ast
 
 import java.util.Date
 
-
-
-
 trait Cond extends Expr
 
 trait GenericCond extends Cond {
@@ -18,6 +15,8 @@ trait GenericCond extends Cond {
   def defaultError = Default(this, DefaultError)
   def and(that: Cond) = And(this, that)
   def or(that: Cond) = Or(this, that)
+  def ? = defaultTrue
+  def ! = defaultError
   def &&(that: Cond) = and(that)
   def ||(that: Cond) = and(that)
 }
