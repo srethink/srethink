@@ -9,4 +9,9 @@ trait TermEncoder {
 }
 
 object DefaultTermEncoders extends TermEncoder{
+  def encode(expr: Expr) = {
+    ???
+  }
+
+
 }

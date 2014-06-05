@@ -9,6 +9,19 @@ trait Expr  extends RValue
 
 trait Func extends RValue
 
+trait RConstant[T] extends RValue with HasOperators {
+  val value: T
+}
+
+trait RConstants {
+  implicit class RNumber(val value: Double) extends RConstant[Double]
+  implicit class RString(val value: String) extends RConstant[String]
+
+  implicit def int2RNumber(value: Int) =  RNumber(value)
+  implicit def longRNumber(value: Long) = RNumber(value)
+}
+
+
 case class RField(val path: Seq[String])
     extends RValue with RDynamic {
 
@@ -29,8 +42,10 @@ case class RDatabase(name: String) extends Dynamic with RValue {
     tables.getOrElseUpdate(name, new RTable(name))
 }
 
-case class RTable(name: String) extends RValue with RDynamic {
+case class RTable(name: String, primaryKeyName: String = "id") extends RValue with RDynamic {
   val path = Nil
+
+  def primaryKey = selectDynamic(primaryKeyName)
 }
 
 trait RDynamic extends Dynamic {

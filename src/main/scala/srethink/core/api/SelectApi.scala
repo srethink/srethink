@@ -5,15 +5,16 @@ import srethink.core.ast._
 import srethink.core.codec._
 
 case class Select(
-  database: String,
-  table: String,
+  database: RDatabase,
+  table: RTable,
   map: Option[Expr],
   filter: Option[Cond],
   offset: Option[Int],
   size: Option[Int])
 
 object Select {
-  def builder(db: String, table: String) = {
+
+  def builder(db: RDatabase, table: RTable) = {
     new SelectBuilder(db, table)
   }
 
@@ -26,8 +27,8 @@ object Select {
 }
 
 class SelectBuilder(
-  val _db: String,
-  val _table: String,
+  val _db: RDatabase,
+  val _table: RTable,
   var _map: Option[Expr] = None,
   var _filter: Option[Cond] = None,
   var _offset: Option[Int] = None,

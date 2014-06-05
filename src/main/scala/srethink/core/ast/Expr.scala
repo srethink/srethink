@@ -2,35 +2,45 @@ package srethink.core.ast
 
 import java.util.Date
 
-trait Cond extends Expr
 
-trait GenericCond extends Cond {
-  val DefaultTrue = 1
-  val DefaultError = 2
+trait HasOperators extends Expr {
 
-  case class Default(cond: Cond, defaultType: Int)
-      extends Cond
+  def + (that: HasOperators) = Add(this, that)
 
-  def defaultTrue = Default(this, DefaultTrue)
-  def defaultError = Default(this, DefaultError)
-  def and(that: Cond) = And(this, that)
-  def or(that: Cond) = Or(this, that)
-  def ? = defaultTrue
-  def ! = defaultError
-  def &&(that: Cond) = and(that)
-  def ||(that: Cond) = and(that)
+  def - (that: HasOperators) = Minus(this, that)
+
+  def * (that: HasOperators) = Multiply(this, that)
+
+  def / (that: HasOperators) = Divide(this, that)
+
+  def === (that: HasOperators) = Equals(this, that)
+
+  def =!= (that: HasOperators) = NotEquals(this, that)
 }
 
-case class FieldEq(field: Seq[String], value: Any) extends Cond
+trait HasBiOperators extends Expr {
+  def and(that: HasBiOperators) = And(this, that)
+  def or(that: HasBiOperators) = Or(this, that)
+  def &&(that: HasBiOperators) = and(that)
+  def ||(that: HasBiOperators) = or(that)
+}
 
-case class FieldGt(field: Seq[String], value: Any) extends Cond
+case class And(left: HasBiOperators, right: HasBiOperators) extends HasBiOperators
 
-case class FieldLt(field: Seq[String], value: Any) extends Cond
+case class Or(left: HasBiOperators, right: HasBiOperators) extends HasBiOperators
 
-case class FieldDuring(field: Seq[String], from: Date, to: Date) extends Cond
+case class Eq(left: Expr, right: Expr) extends HasBiOperators
 
-case class FieldMatch(field: Seq[String], pattern: String) extends Cond
+case class NotEq(left: Expr, right: Expr) extends HasBiOperators
 
-case class And(a: Cond, b: Cond)
+case class Add(left: HasOperators, right: HasOperators) extends HasOperators
 
-case class Or(a: Cond, b: Cond)
+case class Minus(left: HasOperators, right: HasOperators) extends  HasOperators
+
+case class Multiply(left: HasOperators, right: HasOperators) extends  HasOperators
+
+case class Divide(left: HasOperators, right: HasOperators) extends  HasOperators
+
+case class Equals(left: HasOperators, right: HasOperators) extends  HasOperators
+
+case class NotEquals(left: HasOperators, right: HasOperators) extends HasOperators
