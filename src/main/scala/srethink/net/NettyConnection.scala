@@ -1,4 +1,4 @@
-package srethink.io
+package srethink.net
 
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer._

@@ -1,4 +1,4 @@
-package srethink.io
+package srethink.net
 
 import scala.concurrent.Future
 import srethink.protocol._
