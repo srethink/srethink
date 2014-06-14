@@ -1,4 +1,4 @@
-package srethink.api
+package srethink.ast
 
 import srethink.protocol._
 import srethink.protocol.Datum.DatumType
@@ -69,22 +69,24 @@ case class RDb(name: DatumTerm[RStr]) extends RTerm {
   )
 }
 
-
-
-case class MakeArray(terms: Seq[RTerm]) extends RTerm {
+case class RMakeArray(terms: Seq[RTerm]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.MAKE_ARRAY),
     args = terms.map(_.toTerm)
   )
 }
 
-case class Get(table: RTable, primaryKey: DatumTerm[RStr]) {
+case class Get(table: RTable, primaryKey: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.GET),
     args = Seq(table.toTerm, primaryKey.toTerm)
   )
 }
 
-case class DBCreate(db: RDb) {
+case class DBCreate(db: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(`type` = Some(TermType.DB_CREATE), args = Seq(db.toTerm))
+}
+
+case class DBDrop(db: DatumTerm[RStr]) extends RTerm {
+  def toTerm = Term(`type` = Some(TermType.DB_DROP), args = Seq(db.toTerm))
 }

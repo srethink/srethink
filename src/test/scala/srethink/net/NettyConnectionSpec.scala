@@ -2,7 +2,6 @@ package srethink.net
 
 import org.specs2.mutable.Specification
 import org.specs2.specification._
-import srethink.core._
 import srethink.protocol._
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext.Implicits.global

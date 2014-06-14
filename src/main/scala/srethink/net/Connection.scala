@@ -2,7 +2,6 @@ package srethink.net
 
 import scala.concurrent.Future
 import srethink.protocol._
-import srethink.core._
 
 
 trait Connection {

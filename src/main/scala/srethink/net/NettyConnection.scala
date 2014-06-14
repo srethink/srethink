@@ -9,7 +9,6 @@ import org.jboss.netty.handler.codec.protobuf._
 import org.jboss.netty.handler.codec.string._
 import scala.concurrent.{Future, promise, Promise}
 import scala.collection.concurrent.TrieMap
-import srethink.core._
 import srethink.protocol._
 
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
