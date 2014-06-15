@@ -7,43 +7,37 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.handler.codec.frame._
 import org.jboss.netty.handler.codec.protobuf._
 import org.jboss.netty.handler.codec.string._
-import scala.concurrent.{Future, promise, Promise}
+import scala.concurrent.{Await, Future, Promise, promise, duration}
 import scala.collection.concurrent.TrieMap
 import srethink.protocol._
 
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
-
   private implicit val executionContext = config.executionContext
   private val responseMap = TrieMap[Long, Promise[Response]]()
   private val handshake = promise[String]
   @volatile
   private var channel = None: Option[Channel]
-  @volatile
-  private var connected = false
 
   def close() = channel.foreach(_.close())
 
-  def isConnected = connected
+  def isConnected = handshake.isCompleted
 
   def query(query: Query): Future[Response] = {
     val newPromise = promise[Response]
-    val p = responseMap.putIfAbsent(query.token.get, newPromise).getOrElse {
+    def p = responseMap.putIfAbsent(query.token.get, newPromise).getOrElse {
       channel.get.write(query)
       newPromise
     }
-
-    if(connected) p.future else {
-      for {
-        shake <- handshake.future
-        resp <- p.future
-      } yield resp
-    }
+    for {
+      shake <- handshake.future
+      resp <- p.future
+    } yield resp
   }
 
   def connect() = {
     val channelFuture = bootstrap().connect(new java.net.InetSocketAddress(config.hostname, config.port))
     channel = Some(channelFuture.getChannel)
-    channelFuture.sync()
+    Await.ready(handshake.future, duration.Duration.Inf)
   }
 
   private def bootstrap() = {
@@ -67,7 +61,6 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   }
 
   class RethinkHandler extends SimpleChannelUpstreamHandler {
-
     private val frameDecoderName = "frameDecoder"
     private val messageDecoderName = "messageDecoder"
     private val frameEncoderName = "frameEncoder"
@@ -82,12 +75,13 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       e.getMessage match {
         case "SUCCESS" =>
           prepareQuery(ctx)
-          connected = true
           handshake.success("SUCCESS")
         case handshakeResult: String =>
           handshake.failure(new ConnectionError(handshakeResult.toString))
         case response: Response =>
-          responseMap(response.token.get).success(response)
+          val promise = responseMap(response.token.get)
+          responseMap.remove(response.token.get)
+          promise.success(response)
       }
     }
 

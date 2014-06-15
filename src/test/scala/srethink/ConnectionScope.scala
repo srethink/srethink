@@ -6,10 +6,13 @@ import srethink.protocol._
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.concurrent.Executors
 
-trait WithConnection extends Scope {
-
+trait TokenGenerator {
   val tokenGen = new java.util.concurrent.atomic.AtomicLong
+  def nextToken = tokenGen.incrementAndGet()
+}
 
+trait Connected {
+  this: TokenGenerator =>
   val cfg = NettyRethinkConfig(
     hostname = "localhost",
     port = 28015,
@@ -20,8 +23,13 @@ trait WithConnection extends Scope {
     executionContext = global
   )
 
-  def nextToken = tokenGen.incrementAndGet()
+  lazy val connection = new NettyConnection(cfg)
 
-  val connection = new NettyConnection(cfg)
-  connection.connect()
+  def connect() = connection.connect()
+  def disconnect() = connection.close()
+
+}
+
+trait WithConnection extends Connected with TokenGenerator with Scope {
+  connect()
 }

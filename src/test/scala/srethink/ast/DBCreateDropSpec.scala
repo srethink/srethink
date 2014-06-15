@@ -1,20 +1,14 @@
 package srethink.ast
 
 import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import srethink.protocol.Response.ResponseType._
 
-class DBCreateDropSpec extends Specification {
-
-  def db(dbName: String) = {
-   DatumTerm(RStr(dbName))
-  }
-
+class DBCreateDropSpec extends TermSpec {
   "db create ast" should {
-    "create and drop db" in new WithTermQuery {
-      val createFut = query(DBCreate(db("foo")).toTerm)
-      createFut must beSome(SUCCESS_ATOM).await
-      val dropFut = query(DBDrop(db("foo")).toTerm)
-      dropFut must beSome(SUCCESS_ATOM).await
-    }
+    "create and drop db" in  {
+      expectSuccessAtom(DBCreate(db("foo")))
+      expectSuccessAtom(DBDrop(db("foo")))
+     }
   }
 }

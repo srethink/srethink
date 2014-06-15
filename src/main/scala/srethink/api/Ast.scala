@@ -90,3 +90,17 @@ case class DBCreate(db: DatumTerm[RStr]) extends RTerm {
 case class DBDrop(db: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(`type` = Some(TermType.DB_DROP), args = Seq(db.toTerm))
 }
+
+case class TableCreate(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.TABLE_CREATE),
+    args = Seq(table.toTerm)
+  )
+}
+
+case class TableDrop(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.TABLE_DROP),
+    args = Seq(table.toTerm)
+  )
+}
