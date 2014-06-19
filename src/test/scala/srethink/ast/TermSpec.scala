@@ -2,7 +2,7 @@ package srethink.ast
 
 import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
-import org.specs2.specification.{BeforeAfterExample, Scope}
+import org.specs2.specification._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import srethink.protocol._
@@ -15,6 +15,10 @@ trait TermQuery extends Connected with TokenGenerator {
     DatumTerm(RStr(dbName))
   }
 
+  def tb(name: String) = {
+    DatumTerm(RStr(name))
+  }
+
   def query(term: RTerm) = {
     val q = Query(
       `type` = Some(Query.QueryType.START),
@@ -23,13 +27,12 @@ trait TermQuery extends Connected with TokenGenerator {
     )
     connection.query(q).map {
       case Response(tpe, token, resp, backtrace, profile) =>
-        println(resp)
         tpe
     }
   }
 }
 
-trait TermQueryMatchers extends  TermQuery with BeforeAfterExample {
+trait TermQueryMatchers extends  TermQuery {
   this: Specification =>
   def expect(term: RTerm, resp: Response.ResponseType.EnumVal) = {
     Await.result(query(term), duration.Duration.Inf) must beSome(resp)
@@ -37,33 +40,46 @@ trait TermQueryMatchers extends  TermQuery with BeforeAfterExample {
   def expectSuccessAtom(term: RTerm) = expect(term, Response.ResponseType.SUCCESS_ATOM)
 }
 
-trait TermSpec extends Specification with TermQueryMatchers with BeforeAfterExample {
-  override def before = {
-    connect()
-    Await.result(query(DBCreate(db("test"))), duration.Duration.Inf)
+trait TermSpec extends Specification with TermQueryMatchers {
+  import scala.concurrent._
+
+  sequential // disable parallel execution
+
+  def ready(q: RTerm) = {
+    Await.result(query(q), duration.Duration.Inf)
   }
 
-  override def after = {
-    Await.result(query(DBDrop(db("test"))), duration.Duration.Inf)
-    disconnect()
+  override def map(fs: =>Fragments) = Step(connect())  ^ fs ^ Step(disconnect())
+}
+
+trait WithTestDatabase extends TermSpec with BeforeAfterExample {
+
+  val database = RDb(DatumTerm(RStr("test")))
+
+  def before = {
+    println("creating test db")
+    ready(DBCreate(db("test")))
+  }
+
+  def after = {
+    println("dropping test db")
+    ready(DBDrop(db("test")))
   }
 }
 
-trait WithTestDatabase extends Specification  with TermQueryMatchers with BeforeAfterExample {
-  val database = RDb(DatumTerm(RStr("test")))
-  import scala.concurrent._
+trait WithTestTable extends WithTestDatabase {
+  val table = RTable(tb("test"))
 
   override def before = {
-    println("connecting...")
-    connect()
-    println("creating test db")
-    Await.result(query(DBCreate(db("test"))), duration.Duration.Inf)
+    super.before
+    println("creating test table")
+    ready(TableCreate(tb("test")))
   }
 
   override def after = {
-    println("dropping test db")
-    Await.result(query(DBDrop(db("test"))), duration.Duration.Inf)
-    println("disconnecting")
-    disconnect()
+    println("dropping test table")
+    ready(TableDrop(tb("test")))
+    super.after
   }
+
 }

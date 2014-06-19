@@ -46,6 +46,13 @@ case class RObject(value: Seq[(String, RDatum)]) extends RDatum {
   )
 }
 
+case class RJson(value: String) extends RDatum {
+  def toDatum = Datum(
+    `type` = Some(DatumType.R_JSON),
+    rStr = Some(value)
+  )
+}
+
 trait RTerm {
   def toTerm: Term
 }
@@ -102,5 +109,12 @@ case class TableDrop(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTe
   def toTerm = Term(
     `type` = Some(TermType.TABLE_DROP),
     args = Seq(table.toTerm)
+  )
+}
+
+case class Insert[T <: RDatum]( table: RTable, data: DatumTerm[T], db: Option[RDb] = None) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.INSERT),
+    `args` = Seq(table.toTerm, data.toTerm)
   )
 }

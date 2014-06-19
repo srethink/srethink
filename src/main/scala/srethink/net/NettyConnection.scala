@@ -18,7 +18,11 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   @volatile
   private var channel = None: Option[Channel]
 
-  def close() = channel.foreach(_.close())
+  def close() = channel.foreach { c =>
+    c.close()
+    c.getCloseFuture().awaitUninterruptibly()
+
+  }
 
   def isConnected = handshake.isCompleted
 
