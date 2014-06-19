@@ -920,7 +920,7 @@ final case class Term (
   def addAllArgs(_f: TraversableOnce[Term]) = copy(`args` = `args` ++ _f)
   def setOptargs(_i: Int, _v: Term.AssocPair) = copy(`optargs` = `optargs`.updated(_i, _v))
   def addOptargs(_f: Term.AssocPair) = copy(`optargs` = `optargs` :+ _f)
-  def addAllOptargs(_f: Term.AssocPair*) = copy(`optargs` = `optargs` ++ _f)
+  def addAEllOptargs(_f: Term.AssocPair*) = copy(`optargs` = `optargs` ++ _f)
   def addAllOptargs(_f: TraversableOnce[Term.AssocPair]) = copy(`optargs` = `optargs` ++ _f)
 
   def clearType = copy(`type` = None)
