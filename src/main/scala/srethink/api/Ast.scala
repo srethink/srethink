@@ -5,6 +5,7 @@ import srethink.protocol.Datum.DatumType
 import srethink.protocol.Term.TermType
 import scala.collection.immutable.Seq
 import scala.collection.{Seq => _}
+import scala.language.existentials
 
 trait RDatum {
   def toDatum: Datum
@@ -57,16 +58,34 @@ trait RTerm {
   def toTerm: Term
 }
 
+object RTerm {
+  val REmptyOpts = new RTermOpts(Nil)
+}
+
+class RTermOpts(val opts: Seq[(String, RTerm)]) extends AnyVal {
+  def toOptArgs = opts.map {
+    case (name, value) => Term.AssocPair(Some(name), Some(value.toTerm))
+  }
+}
+
+object RTermOpts {
+  def apply(opts: (String, RTerm)*) = new RTermOpts(opts.to[Seq])
+}
+
+
 case class DatumTerm[T <: RDatum](rDatum: T) extends RTerm {
   def toTerm = Term(Some(TermType.DATUM),  Some(rDatum.toDatum))
 }
 
 
-case class RTable(name: DatumTerm[RStr]) extends RTerm {
+case class RTable(
+  name: DatumTerm[RStr],
+  rdb: Option[RDb] = None,
+  opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.TABLE),
-    `args` = Seq(name.toTerm)
-  )
+    `args` = Seq(name.toTerm),
+    optargs = opts.toOptArgs)
 }
 
 case class RDb(name: DatumTerm[RStr]) extends RTerm {
@@ -83,7 +102,7 @@ case class RMakeArray(terms: Seq[RTerm]) extends RTerm {
   )
 }
 
-case class Get(table: RTable, primaryKey: DatumTerm[RStr]) extends RTerm {
+case class Get(table: RTable, primaryKey: DatumTerm[_ <: RDatum]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.GET),
     args = Seq(table.toTerm, primaryKey.toTerm)
@@ -98,7 +117,7 @@ case class DBDrop(db: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(`type` = Some(TermType.DB_DROP), args = Seq(db.toTerm))
 }
 
-case class TableCreate(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTerm {
+case class TableCreate(table: DatumTerm[RStr], opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.TABLE_CREATE),
     args = Seq(table.toTerm)
