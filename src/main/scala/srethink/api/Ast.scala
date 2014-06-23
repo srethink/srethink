@@ -137,3 +137,17 @@ case class Insert[T <: RDatum]( table: RTable, data: DatumTerm[T], db: Option[RD
     `args` = Seq(table.toTerm, data.toTerm)
   )
 }
+
+case class EQ(items: RTerm*) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.EQ),
+    args = items.map(_.toTerm).to[Seq]
+  )
+}
+
+case class Filter(table: RTable, func: RTerm) {
+  def toTerm = Term(
+    `type` = Some(TermType.FILTER),
+    args = Seq(func.toTerm)
+  )
+}
