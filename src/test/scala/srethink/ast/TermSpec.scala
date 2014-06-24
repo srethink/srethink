@@ -30,14 +30,6 @@ trait TermQuery extends Connected with TokenGenerator {
     connection.query(q)
   }
 
-  def queryResponseType(term: RTerm) = {
-    query(term).map {
-      case Response(tpe, token, resp, backtrace, profile) =>
-        println(resp)
-        tpe
-    }
-  }
-
   def ready(q: RTerm) = {
     Await.result(query(q), duration.Duration.Inf)
   }
@@ -47,14 +39,18 @@ trait TermQueryMatchers extends  TermQuery {
   this: Specification =>
 
   def expect[T](term: RTerm)(matcher: Response => MatchResult[T]) = {
-    query(term).map(matcher(_)).await(100)
+    query(term).map{ r => println(r); matcher(r) }.await(100)
   }
 
   def expectSuccessAtom(term: RTerm) = expect(term)(_.`type`.get === Response.ResponseType.SUCCESS_ATOM)
 
   def expectNotNull(term: RTerm) = expect(term)(_.response(0).`type`.get !== Datum.DatumType.R_NULL)
 
-  def expectNull(term: RTerm) = expect(term)(_.response(0).`type`.get === Datum.DatumType.R_NULL)
+  def expectNull(term: RTerm) = expect(term) {
+    case Response(Some(tpe), Some(token), response, Some(backtrace), Some(profile)) =>
+      tpe === Response.ResponseType.SUCCESS_SEQUENCE
+      response(0).`type`.get === Datum.DatumType.R_NULL
+  }
 
 }
 

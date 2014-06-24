@@ -138,6 +138,20 @@ case class Insert[T <: RDatum]( table: RTable, data: DatumTerm[T], db: Option[RD
   )
 }
 
+case class Var(name: DatumTerm[RNum]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.VAR),
+    args = Seq(name.toTerm)
+  )
+}
+
+case class Func(argc: DatumTerm[RArray], body: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.FUNC),
+    args = Seq(argc.toTerm, body.toTerm)
+  )
+}
+
 case class EQ(items: RTerm*) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.EQ),
@@ -145,9 +159,16 @@ case class EQ(items: RTerm*) extends RTerm {
   )
 }
 
-case class Filter(table: RTable, func: RTerm) {
+case class Filter(sequence: RTerm, func: RTerm) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.FILTER),
-    args = Seq(func.toTerm)
+    args = Seq(sequence.toTerm, func.toTerm)
+  )
+}
+
+case class GetField(obj: RTerm, name: DatumTerm[RStr]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.GET_FIELD),
+    `args` = Seq(obj.toTerm, name.toTerm)
   )
 }
