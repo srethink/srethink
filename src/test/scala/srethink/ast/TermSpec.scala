@@ -7,8 +7,9 @@ import org.specs2.matcher.MatchResult
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import srethink.protocol._
 import srethink._
+import srethink.protocol._
+import srethink.protocol.Response.ResponseType._
 
 
 trait TermQuery extends Connected with TokenGenerator {
@@ -39,7 +40,7 @@ trait TermQueryMatchers extends  TermQuery {
   this: Specification =>
 
   def expect[T](term: RTerm)(matcher: Response => MatchResult[T]) = {
-    query(term).map{ r => println(r); matcher(r) }.await(100)
+    query(term).map{matcher}.await(100)
   }
 
   def expectSuccessAtom(term: RTerm) = expect(term)(_.`type`.get === Response.ResponseType.SUCCESS_ATOM)
@@ -47,8 +48,8 @@ trait TermQueryMatchers extends  TermQuery {
   def expectNotNull(term: RTerm) = expect(term)(_.response(0).`type`.get !== Datum.DatumType.R_NULL)
 
   def expectNull(term: RTerm) = expect(term) {
-    case Response(Some(tpe), Some(token), response, Some(backtrace), Some(profile)) =>
-      tpe === Response.ResponseType.SUCCESS_SEQUENCE
+    case Response(Some(tpe), Some(token), response, backtrace, profile) =>
+      tpe must be_==(SUCCESS_ATOM) or be_==(SUCCESS_SEQUENCE) or be_==(SUCCESS_PARTIAL)
       response(0).`type`.get === Datum.DatumType.R_NULL
   }
 
@@ -69,12 +70,10 @@ trait WithTestDatabase extends TermSpec with BeforeAfterExample {
   val database = RDb(DatumTerm(RStr("test")))
 
   def before = {
-    println("creating test db")
     ready(DBCreate(db("test")))
   }
 
   def after = {
-    println("dropping test db")
     ready(DBDrop(db("test")))
   }
 }
@@ -88,12 +87,10 @@ trait WithTestTable extends WithTestDatabase {
 
   override def before = {
     super.before
-    println("creating test table")
     ready(TableCreate(tb("test"), opts = opts))
   }
 
   override def after = {
-    println("dropping test table")
     ready(TableDrop(tb("test")))
     super.after
   }
