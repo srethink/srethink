@@ -1,6 +1,7 @@
 package srethink.ast
 
 import srethink.protocol._
+import scala.collection.immutable.Seq
 
 object DatumHelper {
   import Datum.DatumType._
@@ -23,5 +24,21 @@ object TermHelper {
 
   def strTerm(value: String) = {
     datumTerm(strDatum(value))
+  }
+}
+
+
+object AstHelper {
+  def function(argc: Int)(func: Seq[Var] => RTerm) = {
+    val argIdx = (0 until argc)
+    val argIds = DatumTerm(RArray(argIdx.map(i => RNum(i))))
+    val vars = argIdx.map(i => Var(DatumTerm(RNum(i))))
+    Func(argIds, func(vars))
+  }
+
+  def function1(body: Var => RTerm) = {
+    function(1) { args =>
+      body(args(0))
+    }
   }
 }

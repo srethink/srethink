@@ -8,6 +8,7 @@ trait RethinkConfig {
   val port: Int
   val magic: Int
   val authenticationKey: String
+  val executionContext: ExecutionContext
 }
 
 case class NettyRethinkConfig(

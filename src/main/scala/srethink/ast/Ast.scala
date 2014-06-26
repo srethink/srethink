@@ -11,6 +11,7 @@ trait RDatum {
   def toDatum: Datum
 }
 
+
 case class RBool(value: Boolean) extends RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_BOOL),
@@ -57,6 +58,8 @@ case class RJson(value: String) extends RDatum {
 trait RTerm {
   def toTerm: Term
 }
+
+trait RPredicate extends RTerm
 
 object RTerm {
   val REmptyOpts = new RTermOpts(Nil)
@@ -152,16 +155,37 @@ case class Func(argc: DatumTerm[RArray], body: RTerm) extends RTerm {
   )
 }
 
-case class EQ(items: RTerm*) extends RTerm {
+case class EQ(items: RTerm*) extends RPredicate {
   def toTerm = Term(
     `type` = Some(TermType.EQ),
     args = items.map(_.toTerm).to[Seq]
   )
 }
 
+case class GT(left: RTerm, right: RTerm) extends RPredicate {
+  def toTerm = Term(
+    `type` = Some(TermType.GT),
+    args = Seq(left.toTerm, right.toTerm)
+  )
+}
+
+case class LT(left: RTerm, right: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.LT),
+    args = Seq(left.toTerm, right.toTerm)
+  )
+}
+
 case class Filter(sequence: RTerm, func: RTerm) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.FILTER),
+    args = Seq(sequence.toTerm, func.toTerm)
+  )
+}
+
+case class Map(sequence: RTerm, func: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.MAP),
     args = Seq(sequence.toTerm, func.toTerm)
   )
 }
