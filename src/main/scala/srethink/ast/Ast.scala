@@ -105,6 +105,13 @@ case class RMakeArray(terms: Seq[RTerm]) extends RTerm {
   )
 }
 
+case class ISO8601(time: DatumTerm[RStr]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.ISO8601),
+    args = Seq(time.toTerm)
+  )
+}
+
 case class Get(table: RTable, primaryKey: DatumTerm[_ <: RDatum]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.GET),
