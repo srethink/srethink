@@ -14,7 +14,7 @@ import srethink.protocol._
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   private implicit val executionContext = config.executionContext
   private val responseMap = TrieMap[Long, Promise[Response]]()
-  private val handshake = promise[String]
+  private val handshake = Promise[String]()
   @volatile
   private var channel = None: Option[Channel]
 
@@ -27,7 +27,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def isConnected = handshake.isCompleted
 
   def query(query: Query): Future[Response] = {
-    val newPromise = promise[Response]
+    val newPromise = Promise[Response]()
     def p = responseMap.putIfAbsent(query.token.get, newPromise).getOrElse {
       channel.get.write(query)
       newPromise
