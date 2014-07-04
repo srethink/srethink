@@ -118,6 +118,13 @@ class ISO8601(val time: Date) extends AnyVal with RTerm {
   }
 }
 
+
+class EpochTime(val time: Date) extends AnyVal with RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.EPOCH_TIME),
+    args = Seq(numTerm(time.getTime / 1.00).toTerm))
+}
+
 case class Get(table: RTable, primaryKey: DatumTerm[_ <: RDatum]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.GET),
