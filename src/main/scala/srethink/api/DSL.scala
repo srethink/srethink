@@ -6,16 +6,15 @@ import AstHelper._
 
 trait R { this: QueryDSL =>
   val connection: Connection
-  def table(name: String) = new Table(RTable(DatumTerm(RStr(name))), connection)
+  def table(name: String) = new Table(new RTable(name), connection)
 
   class Table(
     table: RTable,
     conn: Connection
   ) extends Sequence(table, conn) {
-
     def get[T: DatumDecoder](pk: RDatum) = {
       val decoder = implicitly[DatumDecoder[T]]
-      singleSelect[T](Get(table, DatumTerm(pk)), decoder)
+      singleSelect[T](Get(table, new DatumTerm(pk)), decoder)
     }
   }
 

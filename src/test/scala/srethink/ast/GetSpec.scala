@@ -1,10 +1,12 @@
 package srethink.ast
 
+import AstHelper._
+
 class GetSpec extends WithTestTable {
   "get ast" should {
     "get object by primary key" in new WithTestData {
-      expectNotNull(Get(table, DatumTerm(RNum(1))))
-      expectNull(Get(table, DatumTerm(RNum(2))))
+      expectNotNull(Get(table, numTerm(1)))
+      expectNull(Get(table, numTerm(2)))
     }
   }
 }

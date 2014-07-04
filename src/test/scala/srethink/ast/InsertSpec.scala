@@ -5,13 +5,13 @@ import scala.collection.immutable.Seq
 class InsertSpec extends WithTestTable {
   "insert ast" should {
     "insert object to server" in {
-      val data = RObject(Seq("name" -> RStr("foo"), "id" -> RNum(1)))
-      expectSuccessAtom(Insert(table, DatumTerm(data)))
+      val data = new RObject(Seq("name" -> new RStr("foo"), "id" -> new RNum(1)))
+      expectSuccessAtom(Insert(table, new DatumTerm(data)))
     }
 
     "insert json to server" in {
-      val data = RJson("""{"name": "foo", "id": "1"}""")
-      expectSuccessAtom(Insert(table, DatumTerm(data)))
+      val data = new RJson("""{"name": "foo", "id": "1"}""")
+      expectSuccessAtom(Insert(table, new DatumTerm(data)))
     }
   }
 }
