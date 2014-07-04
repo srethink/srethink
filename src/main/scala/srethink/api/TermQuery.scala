@@ -18,7 +18,9 @@ object TokenGenerator {
   val gen = new java.util.concurrent.atomic.AtomicLong
 }
 
-private[api] trait TermQuery extends ConnectionAware with TokenGenerator{
+private[api] trait TermQuery
+    extends ConnectionAware
+    with TokenGenerator {
 
   implicit val ctx = connection.config.executionContext
 

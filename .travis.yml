@@ -5,7 +5,7 @@ before_install:
   - sudo apt-get update -q
 
 install:
-  - sudo apt-get install rethinkdb
+  - sudo apt-get install --force-yes rethinkdb 
 
 before_script:
   - sudo cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/default.conf
@@ -18,4 +18,4 @@ jdk:
   - oraclejdk7
   - openjdk6
 
-script: sbt ++$TRAVIS_SCALA_VERSION test
+script: sbt ++$TRAVIS_SCALA_VERSION +test
