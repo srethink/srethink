@@ -1,61 +1,66 @@
 package srethink.ast
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import srethink.protocol._
 import srethink.protocol.Datum.DatumType
 import srethink.protocol.Term.TermType
-import scala.collection.immutable.Seq
 import scala.collection.{Seq => _}
 import scala.language.existentials
+import AstHelper._
 
-trait RDatum {
+trait RDatum extends Any{
   def toDatum: Datum
 }
 
 
-case class RBool(value: Boolean) extends RDatum {
+class RBool(val value: Boolean) extends AnyVal with RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_BOOL),
     rBool = Some(value)
   )
 }
-case class RNum(value: Double) extends RDatum {
+class RNum(val value: Double) extends AnyVal with RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_NUM),
     rNum = Some(value)
   )
 }
 
-case class RStr(value: String) extends RDatum {
+class RStr(val value: String) extends AnyVal with RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_STR),
     rStr = Some(value)
   )
 }
 
-case class RArray(value: Seq[RDatum]) extends RDatum {
+class RArray(val value: Seq[RDatum]) extends AnyVal with RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_ARRAY),
     rArray = value.map(_.toDatum))
 }
 
-case class RObject(value: Seq[(String, RDatum)]) extends RDatum {
-  val pairs = value.map {
-    case (name, data) => Datum.AssocPair(Some(name), Some(data.toDatum))
+class RObject(val value: Seq[(String, RDatum)]) extends AnyVal with RDatum {
+
+  def toDatum = {
+    val pairs = value.map {
+      case (name, data) => Datum.AssocPair(Some(name), Some(data.toDatum))
+    }
+    Datum(
+      `type` = Some(DatumType.R_OBJECT),
+      rObject = pairs
+    )
   }
-  def toDatum = Datum(
-    `type` = Some(DatumType.R_OBJECT),
-    rObject = pairs
-  )
 }
 
-case class RJson(value: String) extends RDatum {
+class RJson(val value: String) extends AnyVal with RDatum {
   def toDatum = Datum(
     `type` = Some(DatumType.R_JSON),
     rStr = Some(value)
   )
 }
 
-trait RTerm {
+trait RTerm extends Any {
   def toTerm: Term
 }
 
@@ -75,41 +80,49 @@ object RTermOpts {
   def apply(opts: (String, RTerm)*) = new RTermOpts(opts.to[Seq])
 }
 
-
-case class DatumTerm[T <: RDatum](rDatum: T) extends RTerm {
+class DatumTerm[T <: RDatum](val rDatum: T) extends AnyVal with RTerm {
   def toTerm = Term(Some(TermType.DATUM),  Some(rDatum.toDatum))
 }
 
 
 case class RTable(
-  name: DatumTerm[RStr],
+  name: String,
   rdb: Option[RDb] = None,
   opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.TABLE),
-    `args` = Seq(name.toTerm),
+    `args` = Seq(strTerm(name).toTerm),
     optargs = opts.toOptArgs)
 }
 
-case class RDb(name: DatumTerm[RStr]) extends RTerm {
+class RDb(val name: String) extends AnyVal with RTerm {
   def toTerm = Term(
     `type` = Some(TermType.DB),
-    `args` = Seq(name.toTerm)
+    `args` = Seq(strTerm(name).toTerm)
   )
 }
 
-case class RMakeArray(terms: Seq[RTerm]) extends RTerm {
+class RMakeArray(val terms: Seq[RTerm]) extends AnyVal with RTerm {
   def toTerm = Term(
     `type` = Some(TermType.MAKE_ARRAY),
     args = terms.map(_.toTerm)
   )
 }
 
-case class ISO8601(time: DatumTerm[RStr]) extends RTerm {
+class ISO8601(val time: Date) extends AnyVal with RTerm {
+  def toTerm = {
+    val str = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(time)
+    Term(
+      `type` = Some(TermType.ISO8601),
+      args = Seq(strTerm(str).toTerm))
+  }
+}
+
+
+class EpochTime(val time: Date) extends AnyVal with RTerm {
   def toTerm = Term(
-    `type` = Some(TermType.ISO8601),
-    args = Seq(time.toTerm)
-  )
+    `type` = Some(TermType.EPOCH_TIME),
+    args = Seq(numTerm(time.getTime / 1.00).toTerm))
 }
 
 case class Get(table: RTable, primaryKey: DatumTerm[_ <: RDatum]) extends RTerm {
@@ -148,10 +161,10 @@ case class Insert[T <: RDatum]( table: RTable, data: DatumTerm[T], db: Option[RD
   )
 }
 
-case class Var(name: DatumTerm[RNum]) extends RTerm {
+class Var(val id: Int) extends AnyVal with RTerm {
   def toTerm = Term(
     `type` = Some(TermType.VAR),
-    args = Seq(name.toTerm)
+    args = Seq(numTerm(id).toTerm)
   )
 }
 
@@ -176,7 +189,7 @@ case class GT(left: RTerm, right: RTerm) extends RPredicate {
   )
 }
 
-case class LT(left: RTerm, right: RTerm) extends RTerm {
+case class LT(left: RTerm, right: RTerm) extends RPredicate {
   def toTerm = Term(
     `type` = Some(TermType.LT),
     args = Seq(left.toTerm, right.toTerm)

@@ -10,16 +10,16 @@ import scala.concurrent._
 import srethink._
 import srethink.protocol._
 import srethink.protocol.Response.ResponseType._
-
+import AstHelper._
 
 trait TermQuery extends Connected with TokenGenerator {
 
   def db(dbName: String) = {
-    DatumTerm(RStr(dbName))
+    strTerm(dbName)
   }
 
   def tb(name: String) = {
-    DatumTerm(RStr(name))
+    strTerm(name)
   }
 
   def query(term: RTerm) = {
@@ -67,7 +67,7 @@ trait TermSpec extends Specification with TermQueryMatchers {
 
 trait WithTestDatabase extends TermSpec with BeforeAfterExample {
 
-  val database = RDb(DatumTerm(RStr("test")))
+  val database = new RDb("test")
 
   def before = {
     ready(DBCreate(db("test")))
@@ -79,11 +79,10 @@ trait WithTestDatabase extends TermSpec with BeforeAfterExample {
 }
 
 trait WithTestTable extends WithTestDatabase {
-  val table = RTable(
-    tb("test"),
+  val table = RTable("test",
     rdb = Some(database))
 
-  val opts = RTermOpts("primary_key" -> DatumTerm(RStr("id")))
+  val opts = RTermOpts("primary_key" -> strTerm("id"))
 
   override def before = {
     super.before
@@ -96,14 +95,14 @@ trait WithTestTable extends WithTestDatabase {
   }
 
   trait WithTestData extends Scope {
-    val testDoc = RObject(
+    val testDoc = new RObject(
       Seq(
-        "id" -> RNum(1),
-        "name" -> RStr("foo"),
-        "age" -> RNum(100)
+        "id" -> new RNum(1),
+        "name" -> new RStr("foo"),
+        "age" -> new RNum(100)
       )
     )
-    ready(Insert(table, DatumTerm(testDoc)))
+    ready(Insert(table, new DatumTerm(testDoc)))
   }
 
 }

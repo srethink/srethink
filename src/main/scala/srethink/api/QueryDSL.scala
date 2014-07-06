@@ -1,11 +1,11 @@
 package srethink.api
 
 import srethink.ast._
-
+import AstHelper._
 trait QueryDSL {
   implicit class RDynamic(val term: RTerm) extends Dynamic {
     def selectDynamic(name: String) = {
-      RDynamic(GetField(term, DatumTerm(RStr(name))))
+      RDynamic(GetField(term, strTerm(name)))
     }
   }
 
