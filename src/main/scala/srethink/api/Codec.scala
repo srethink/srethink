@@ -5,7 +5,7 @@ import srethink.protocol._
 import srethink.ast._
 import Datum.DatumType._
 
-class CodecException(val field: String, tpe: String, value: Any)
+class CodecException(val field: String, tpe: String = "", value: Any = "" )
     extends Exception(s"Cannot encode/deconde field ${field}, value: ${value}, expect type: ${tpe}")
 
 trait RDecoder[+T] {

@@ -33,15 +33,17 @@ private[api] trait TermQuery
     connection.query(q)
   }
 
-  def singleSelect[T](term: RTerm, decoder: DatumDecoder[T]): Future[Option[T]] = {
+  def singleSelect[T](term: RTerm, decoder: RDecoder[T]): Future[Option[T]] = {
     nomalize(query(term)).map {
-      case QuerySuccess(_, data) => data.headOption.map(decoder.decode)
+      case QuerySuccess(_, data) => data.headOption.map(decoder.decode).flatten
     }
   }
 
-  def sequenceSelect[T](term: RTerm, decoder: DatumDecoder[T]): Future[Seq[T]] = {
+  def sequenceSelect[T](term: RTerm, decoder: RDecoder[T]): Future[Seq[T]] = {
     nomalize(query(term)).map {
-      case QuerySuccess(_, data) => data.map(decoder.decode)
+      case QuerySuccess(_, data) => data.map(decoder.decode).collect {
+        case Some(v) => v
+      }
     }
   }
 
