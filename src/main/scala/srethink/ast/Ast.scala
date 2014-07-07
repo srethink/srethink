@@ -60,6 +60,10 @@ class RJson(val value: String) extends AnyVal with RDatum {
   )
 }
 
+object RNull extends RDatum {
+  def toDatum = Datum(`type` = Some(DatumType. R_NULL))
+}
+
 trait RTerm extends Any {
   def toTerm: Term
 }

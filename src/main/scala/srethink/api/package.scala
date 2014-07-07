@@ -1,4 +1,4 @@
 package srethink
 
-package object api extends BasicEncoders {
+package object api extends BasicEncoders with AdditionalCodec {
 }

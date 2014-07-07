@@ -86,4 +86,26 @@ trait BasicEncoders {
       } yield v.toInt
     }
   }
+
+
+}
+
+trait AdditionalCodec {
+  implicit def optionEncoder[T: REncoder] = {
+    new REncoder[Option[T]] {
+      val encoder = implicitly[REncoder[T]]
+      def encode(t: Option[T]) = {
+        t.map(encoder.encode).getOrElse(RNull)
+      }
+    }
+  }
+
+  implicit def traversableEncoder[T: REncoder] = {
+    val encoder = implicitly[REncoder[T]]
+    new REncoder[Traversable[T]] {
+      def encode(t: Traversable[T]) = {
+        new RArray(t.map(encoder.encode).toSeq)
+      }
+    }
+  }
 }
