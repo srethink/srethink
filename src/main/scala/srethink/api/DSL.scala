@@ -12,8 +12,8 @@ trait R { this: QueryDSL =>
     table: RTable,
     conn: Connection
   ) extends Sequence(table, conn) {
-    def get[T: DatumDecoder](pk: RDatum) = {
-      val decoder = implicitly[DatumDecoder[T]]
+    def get[T: RDecoder](pk: RDatum) = {
+      val decoder = implicitly[RDecoder[T]]
       singleSelect[T](Get(table, new DatumTerm(pk)), decoder)
     }
   }
@@ -36,8 +36,8 @@ trait R { this: QueryDSL =>
       new Sequence(Map(seq, body), connection)
     }
 
-    def as[T: DatumDecoder] = {
-      val decoder = implicitly[DatumDecoder[T]]
+    def as[T: RDecoder] = {
+      val decoder = implicitly[RDecoder[T]]
       sequenceSelect(seq, decoder)
     }
   }
