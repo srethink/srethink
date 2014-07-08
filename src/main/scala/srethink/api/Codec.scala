@@ -9,68 +9,75 @@ class CodecException(val field: String, tpe: String = "", value: Any = "" )
     extends Exception(s"Cannot encode/deconde field ${field}, value: ${value}, expect type: ${tpe}")
 
 trait RDecoder[+T] {
-  def decode(datum: Datum): Option[T]
+  def decode(datum: Option[Datum]): Option[T]
 }
 
 trait REncoder[-T] {
   def encode(t: T): RDatum
 }
 
-trait BasicEncoders {
+trait BasicCodecs {
 
   implicit object  IntEncoder extends REncoder[Int] with RDecoder[Int] {
     def encode(t: Int) = new RNum(t)
-    def decode(t: Datum) = {
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_NUM
-        v <- t.rNum
+        d <- t
+        tp <- d.`type` if tp == R_NUM
+        v <- d.rNum
       } yield v.toInt
     }
 
   }
 
-  implicit object  LongEncoder extends REncoder[Long] {
+  implicit object  LongEncoder extends REncoder[Long] with RDecoder[Long] {
     def encode(t: Long) = new RNum(t)
-    def decode(t: Datum) = {
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_NUM
-        v <- t.rNum
+        d <- t
+        tp <- d.`type` if tp == R_NUM
+        v <- d.rNum
       } yield v.toLong
     }
   }
 
-  implicit object FloatEncoder extends REncoder[Float] {
+  implicit object FloatEncoder extends REncoder[Float] with RDecoder[Float] {
     def encode(t: Float) = new RNum(t)
 
-    def decode(t: Datum) = {
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_NUM
-        v <- t.rNum
+        d <- t
+        tp <- d.`type` if tp == R_NUM
+        v <- d.rNum
       } yield v.toFloat
     }
   }
 
-  implicit object DoubleEncoder extends REncoder[Double] {
+  implicit object DoubleEncoder extends REncoder[Double] with RDecoder[Double] {
     def encode(t: Double) = new RNum(t)
-    def decode(t: Datum) = {
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_NUM
-        v <- t.rNum
+        d <- t
+        tp <- d.`type` if tp == R_NUM
+        v <- d.rNum
       } yield v
     }
   }
 
-  implicit object StrEncoder extends REncoder[String] {
+  implicit object StrEncoder extends REncoder[String] with RDecoder[String] {
+
     def encode(t: String) = new RStr(t)
-    def decode(t: Datum) = {
+
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_NUM
-        v <- t.rStr
+        d <- t
+        tp <- d.`type` if tp == R_STR
+        v <- d.rStr
       } yield v
     }
   }
 
-  implicit object DateEncoder extends REncoder[Date] {
+  implicit object DateEncoder extends REncoder[Date] with RDecoder[Date] {
     def encode(t: Date) = new RObject(
       Seq(
         "$reql_type$" -> new RStr("TIME"),
@@ -79,15 +86,17 @@ trait BasicEncoders {
       )
     )
 
-    def decode(t: Datum) = {
+    def decode(t: Option[Datum]) = {
       for {
-        tp <- t.`type` if tp == R_OBJECT
-        v <- t.rNum
-      } yield v.toInt
+        d <- t
+        tp <- d.`type` if tp == R_OBJECT
+        v <- d.rObject.collectFirst {
+          case Datum.AssocPair(Some("epoch_time"), Some(time)) => time
+        }
+        epochTime <- v.rNum
+      } yield new Date((epochTime * 1000).toLong)
     }
   }
-
-
 }
 
 trait AdditionalCodec {
@@ -105,6 +114,32 @@ trait AdditionalCodec {
     new REncoder[Traversable[T]] {
       def encode(t: Traversable[T]) = {
         new RArray(t.map(encoder.encode).toSeq)
+      }
+    }
+  }
+
+  implicit def optionDecoder[T: RDecoder]: RDecoder[Option[T]] = {
+    new RDecoder[Option[T]] {
+      val decoder = implicitly[RDecoder[T]]
+      def decode(t: Option[Datum]) = {
+        decoder.decode(t).map(Some(_))
+      }
+    }
+  }
+
+  implicit def traversableDecoder[F[_], A](implicit bf: collection.generic.CanBuildFrom[F[_], A, F[A]], decoder: RDecoder[A]): RDecoder[F[A]] = {
+    new RDecoder[F[A]] {
+      def decode(t: Option[Datum]) = {
+        for {
+          d <- t
+          tp <- d.`type` if tp  == R_ARRAY
+        } yield {
+          val builder = bf()
+          d.rArray.foreach { e =>
+            builder += (decoder.decode(Some(e))).get
+          }
+          builder.result()
+        }
       }
     }
   }

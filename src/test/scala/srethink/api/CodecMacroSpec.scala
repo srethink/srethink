@@ -2,6 +2,7 @@ package srethink.api
 
 import org.specs2.mutable.Specification
 import srethink.ast._
+import srethink.protocol._
 
 case class CodecFoo(
   name: String,
@@ -11,13 +12,17 @@ case class CodecFoo(
 
 class CodecMacroSpec extends Specification {
   "codec macro" should {
-    "generate encoder of case class" in {
+    "encode/decode of case class" in {
       val encoder = CodecMacros.encoder[CodecFoo]
-      val data: RDatum = new RStr("foo")
+      val decoder = CodecMacros.decoder[CodecFoo]
       val bar = CodecFoo("bar", None, Nil)
-      val encoded = encoder.encode(CodecFoo("foo", Some(bar), baz = bar:: Nil))
-      println(encoded.value)
-      encoded.value must have size(3)
+      val foo = CodecFoo("foo", Some(bar), baz = bar:: Nil)
+      val encoded = encoder.encode(foo)
+      encoded.toDatum.rObject.foreach {
+        case Datum.AssocPair(Some(key), Some(v)) => println(key + "--->" + v)
+      }
+      val decoded = decoder.decode(Some(encoded.toDatum))
+      decoded must be_==(foo)
     }
   }
 }
