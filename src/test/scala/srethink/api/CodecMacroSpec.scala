@@ -18,11 +18,8 @@ class CodecMacroSpec extends Specification {
       val bar = CodecFoo("bar", None, Nil)
       val foo = CodecFoo("foo", Some(bar), baz = bar:: Nil)
       val encoded = encoder.encode(foo)
-      encoded.toDatum.rObject.foreach {
-        case Datum.AssocPair(Some(key), Some(v)) => println(key + "--->" + v)
-      }
       val decoded = decoder.decode(Some(encoded.toDatum))
-      decoded must be_==(foo)
+      decoded must beSome(foo)
     }
   }
 }

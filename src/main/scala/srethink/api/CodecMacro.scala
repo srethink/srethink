@@ -104,9 +104,15 @@ class DecoderMacroHelper[C <: Context](val c: C) {
     }
     val decodedValue = q"Some($companion(..$paramValues))"
     q"""
-       def decode(d: Option[$datum]) ={
-         val pairMap = d.get.`rObject`.map { case Datum.AssocPair(Some(key), Some(value)) => key -> value }.toMap
-         $decodedValue
+       def decode(t: Option[$datum]) = {
+         t.flatMap { d =>
+           d.`type` match {
+             case Some(Datum.DatumType.R_OBJECT) =>
+             val pairMap = d.rObject.collect { case Datum.AssocPair(Some(key), Some(value)) => key -> value}.toMap
+             $decodedValue
+             case _ => None
+           }
+         }
        }
     """
 

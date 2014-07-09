@@ -122,7 +122,7 @@ trait AdditionalCodec {
     new RDecoder[Option[T]] {
       val decoder = implicitly[RDecoder[T]]
       def decode(t: Option[Datum]) = {
-        decoder.decode(t).map(Some(_))
+        Some(decoder.decode(t))
       }
     }
   }
