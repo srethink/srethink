@@ -13,7 +13,9 @@ trait TokenGenerator {
 
 trait Connected {
   this: TokenGenerator =>
-  val cfg = RethinkConfig.nettyConfig()
+  val cfg = RethinkConfig.nettyConfig(
+    version = RethinkConfig.V2
+  )
   lazy val connection = new NettyConnection(cfg)
   def connect() = connection.connect()
   def disconnect() = connection.close()
