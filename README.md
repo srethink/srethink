@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/jilen/srethink.png?label=ready&title=Ready)](https://waffle.io/jilen/srethink)
 Srethink -- A rethinkdb driver for scala
 *****************************************
 
