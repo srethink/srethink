@@ -25,7 +25,10 @@ private[srethink] trait QueryExecutor {
   }
 
   def headOption[T: RDecoder](term: RTerm): Future[Option[T]] = {
-    take[T](term).map(_.headOption)
+    val decoder = implicitly[RDecoder[T]]
+    query(term).map {
+      case QuerySuccess(_, data) => decoder.decode(data.headOption)
+    }
   }
 
   def take[T: RDecoder](term: RTerm): Future[Seq[T]] = {
