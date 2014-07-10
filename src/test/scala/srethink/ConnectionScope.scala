@@ -13,18 +13,8 @@ trait TokenGenerator {
 
 trait Connected {
   this: TokenGenerator =>
-  val cfg = NettyRethinkConfig(
-    hostname = "localhost",
-    port = 28015,
-    magic = VersionDummy.Version.V0_2_VALUE,
-    authenticationKey = "",
-    bossExecutor = Executors.newCachedThreadPool(),
-    workerExecutor = Executors.newCachedThreadPool(),
-    executionContext = global
-  )
-
+  val cfg = RethinkConfig.nettyConfig()
   lazy val connection = new NettyConnection(cfg)
-
   def connect() = connection.connect()
   def disconnect() = connection.close()
 

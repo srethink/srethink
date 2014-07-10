@@ -9,6 +9,7 @@ import org.jboss.netty.handler.codec.protobuf._
 import org.jboss.netty.handler.codec.string._
 import scala.concurrent.{Await, Future, Promise, promise, duration}
 import scala.collection.concurrent.TrieMap
+import scala.util._
 import srethink.protocol._
 
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
@@ -45,10 +46,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   }
 
   private def bootstrap() = {
-    val channelFactory = new NioClientSocketChannelFactory(
-      config.bossExecutor, config.workerExecutor)
-    //Set buffer factory
-    val bootstrap = new ClientBootstrap(channelFactory)
+    val bootstrap = new ClientBootstrap(config.channelFactory)
     val bufferFactory = new HeapChannelBufferFactory(java.nio.ByteOrder.LITTLE_ENDIAN)
     bootstrap.setOption("bufferFactory", bufferFactory)
 
@@ -69,6 +67,14 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     private val messageDecoderName = "messageDecoder"
     private val frameEncoderName = "frameEncoder"
     private val messageEncoderName = "messageEncoder"
+
+    override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) = {
+      e.getCause() match {
+        case e: java.net.ConnectException =>
+          handshake.complete(new Failure(e))
+        case _ => throw e.getCause();
+      }
+    }
 
     override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
       prepareHandshake(ctx)
@@ -106,11 +112,12 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     private def sendHandshake(channel: Channel) {
       import config._
       val authKey = authenticationKey.getBytes("ascii")
-      val bufSize = 4 + 4 + authKey.length
+      val bufSize = 4 + 4 + authKey.length + protocol.map(_ => 4).getOrElse(0)
       val buf = ChannelBuffers.buffer(ChannelBuffers.LITTLE_ENDIAN, bufSize)
       buf.writeInt(magic)
       buf.writeInt(authKey.length)
       buf.writeBytes(authKey)
+      protocol.foreach(buf.writeInt(_))
       channel.write(buf)
     }
   }
