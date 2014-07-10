@@ -6,52 +6,45 @@ import srethink.net._
 import srethink.protocol._
 import srethink.protocol.Response.ResponseType
 
-private[api] trait ConnectionAware {
-  val connection: Connection
-}
-
-private[api] trait TokenGenerator {
+object TokenGenerator {
+  val gen = new java.util.concurrent.atomic.AtomicLong
   def nextToken: Long = TokenGenerator.gen.incrementAndGet
 }
 
-object TokenGenerator {
-  val gen = new java.util.concurrent.atomic.AtomicLong
-}
-
-private[api] trait TermQuery
-    extends ConnectionAware
-    with TokenGenerator {
-
-  implicit val ctx = connection.config.executionContext
+private[srethink] trait QueryExecutor {
+  val connection: Connection
+  implicit lazy val ctx = connection.config.executionContext
 
   def query(term: RTerm) = {
     val q = Query(
       `type` = Some(Query.QueryType.START),
       query = Some(term.toTerm),
-      token = Some(nextToken)
+      token = Some(TokenGenerator.nextToken)
     )
-    connection.query(q)
+    normalize(connection.query(q))
   }
 
-  def singleSelect[T](term: RTerm, decoder: RDecoder[T]): Future[Option[T]] = {
-    nomalize(query(term)).map {
-      case QuerySuccess(_, data) =>
-        decoder.decode(data.headOption)
-    }
+  def headOption[T: RDecoder](term: RTerm): Future[Option[T]] = {
+    take[T](term).map(_.headOption)
   }
 
-  def sequenceSelect[T](term: RTerm, decoder: RDecoder[T]): Future[Seq[T]] = {
-    nomalize(query(term)).map {
+  def take[T: RDecoder](term: RTerm): Future[Seq[T]] = {
+    val decoder = implicitly[RDecoder[T]]
+    query(term).map {
       case QuerySuccess(_, data) => data.map(s => decoder.decode(Some(s)).get)
     }
   }
 
-  private def nomalize(resp: Future[Response]) = {
+  def run(term: RTerm): Future[Boolean] = {
+    query(term).map(_ => true)
+  }
+
+  private def normalize(resp: Future[Response]) = {
     import ResponseType._
     for(r <- resp) yield {
       r.`type`.get match {
         case SUCCESS_ATOM | SUCCESS_PARTIAL | SUCCESS_SEQUENCE =>
-          QuerySuccess(r.`type`.get, r.response.to[Seq])
+          QuerySuccess(r.`type`.get, r.response)
         case COMPILE_ERROR | RUNTIME_ERROR | _ =>
           throw new QueryError(r.`type`.toString, r.response.toString, r.backtrace.toString)
       }

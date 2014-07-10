@@ -1,5 +1,6 @@
 package srethink.ast
 
+import srethink._
 import AstHelper._
 
 class FilterSpec extends WithTestTable {

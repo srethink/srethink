@@ -1,4 +1,4 @@
-package srethink.ast
+package srethink
 
 import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
@@ -7,7 +7,8 @@ import org.specs2.matcher.MatchResult
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import srethink._
+import srethink.api._
+import srethink.ast._
 import srethink.protocol._
 import srethink.protocol.Response.ResponseType._
 import AstHelper._

@@ -4,6 +4,10 @@ import srethink.protocol._
 
 object AstHelper {
 
+  @inline def table(name: String, database: Option[String]) = {
+    new RTable(name, database.map(new RDb(_)))
+  }
+
   @inline def strTerm(str: String) = {
     new DatumTerm(new RStr(str))
   }

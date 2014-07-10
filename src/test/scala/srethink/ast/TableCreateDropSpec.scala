@@ -1,5 +1,7 @@
 package srethink.ast
 
+import srethink._
+
 class TableCreateDropSpec extends WithTestDatabase  {
 
   "table create/drop ast"  should {

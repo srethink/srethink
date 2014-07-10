@@ -1,6 +1,6 @@
 package srethink.ast
 
-import scala.collection.immutable.Seq
+import srethink._
 
 class InsertSpec extends WithTestTable {
   "insert ast" should {

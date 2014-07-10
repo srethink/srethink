@@ -88,6 +88,10 @@ class DatumTerm[T <: RDatum](val rDatum: T) extends AnyVal with RTerm {
   def toTerm = Term(Some(TermType.DATUM),  Some(rDatum.toDatum))
 }
 
+object DatumTerm {
+  def apply(datum: RDatum) = new DatumTerm[RDatum](datum)
+}
+
 
 case class RTable(
   name: String,
@@ -126,7 +130,7 @@ class ISO8601(val time: Date) extends AnyVal with RTerm {
 class EpochTime(val time: Date) extends AnyVal with RTerm {
   def toTerm = Term(
     `type` = Some(TermType.EPOCH_TIME),
-    args = Seq(numTerm(time.getTime / 1.00).toTerm))
+    args = Seq(numTerm(time.getTime / 1000.00).toTerm))
 }
 
 case class Get(table: RTable, primaryKey: DatumTerm[_ <: RDatum]) extends RTerm {
@@ -218,5 +222,19 @@ case class GetField(obj: RTerm, name: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.GET_FIELD),
     `args` = Seq(obj.toTerm, name.toTerm)
+  )
+}
+
+case class Limit(sequence: RTerm, offset: DatumTerm[RNum]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.LIMIT),
+    `args` = Seq(sequence.toTerm, offset.toTerm)
+  )
+}
+
+case class Skip(sequence: RTerm, offset: DatumTerm[RNum]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.SKIP),
+    args = Seq(sequence.toTerm, offset.toTerm)
   )
 }
