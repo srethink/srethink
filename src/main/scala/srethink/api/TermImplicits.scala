@@ -15,6 +15,8 @@ trait TermImplicits {
     def === (that: RTerm) = EQ(term, that)
     def > (that: RTerm) = GT(term, that)
     def < (that: RTerm) = LT(term, that)
+    def + (that: RTerm) = ADD(Seq(term, that))
+    def - (that: RTerm) = SUB(term, that)
 
     def first[T: RDecoder](implicit executor: QueryExecutor) = {
       executor.headOption[T](term)

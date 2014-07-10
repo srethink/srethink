@@ -204,6 +204,20 @@ case class LT(left: RTerm, right: RTerm) extends RPredicate {
   )
 }
 
+case class ADD(args: Seq[RTerm]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.ADD),
+    args = args.map(_.toTerm)
+  )
+}
+
+case class SUB(left: RTerm, right: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.SUB),
+    args = Seq(left.toTerm, right.toTerm)
+  )
+}
+
 case class Filter(sequence: RTerm, func: RTerm) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.FILTER),
