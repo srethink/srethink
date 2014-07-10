@@ -1,0 +1,27 @@
+package srethink.dsl
+
+import srethink.api._
+
+class SubFuncSpec extends DSLSpec {
+  "sub function" should {
+    "sub fields with fields" in {
+      val matchers = for {
+        succ <- r.table("test").insert(man).run  if succ
+        sub <- r.table("test").map{p => p.height - p.weight}.first[Long]
+      } yield {
+        sub must beSome(man.height - man.weight.get)
+      }
+      matchers.await
+    }
+
+    "sub fields with number" in {
+      val matchers = for {
+        succ <- r.table("test").insert(man).run  if succ
+        sum <- r.table("test").map{p => p.height - 1000}.first[Long]
+      } yield {
+        sum must beSome(man.height - 1000)
+      }
+      matchers.await
+    }
+  }
+}
