@@ -15,5 +15,15 @@ class SequenceDSLSpec extends DSLSpec {
       }
       matchers.await
     }
+
+    "map data" in {
+      val matchers = for {
+        succ <- r.table("test").insert(man).run  if succ
+        h <- r.table("test").map(_.height - 100).first[Long]
+      } yield {
+        h must beSome(man.height - 100)
+      }
+      matchers.await
+    }
   }
 }

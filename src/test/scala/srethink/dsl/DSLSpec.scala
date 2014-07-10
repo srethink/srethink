@@ -9,6 +9,7 @@ case class Person(
   name: String,
   birth: Date,
   height: Int,
+  weight: Option[Int],
   pair: Option[Person],
   children: Seq[Person])
 
@@ -25,9 +26,9 @@ trait DSLSpec extends WithTestTable {
     val connection = DSLSpec.this.connection
   }
 
-  val boy = Person(Some(2), "boy",  yearsAgo(10), 130, None, Nil)
-  val women = Person(Some(3), "woman", yearsAgo(27), 160, None, Nil)
-  val man = Person(Some(1), "man",  yearsAgo(30), 175, Some(women), boy :: Nil)
+  val boy = Person(Some(2), "boy",  yearsAgo(10), 130, Some(40), None, Nil)
+  val women = Person(Some(3), "woman", yearsAgo(27), 160, Some(45), None, Nil)
+  val man = Person(Some(1), "man",  yearsAgo(30), 175, Some(60), Some(women), boy :: Nil)
 
   private def yearsAgo(years: Int) = {
     val now = System.currentTimeMillis

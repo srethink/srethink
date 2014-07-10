@@ -13,7 +13,7 @@ class SequenceDSL(
     new SequenceDSL(Filter(seq, body))
   }
 
-  def map(func: RDynamic => RTerm) {
+  def map(func: RDynamic => RTerm) = {
     val body = function1 { arg =>
       func(RDynamic(arg))
     }
