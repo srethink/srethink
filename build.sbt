@@ -4,7 +4,7 @@ name := "srethink"
 
 version := "0.0.1-SNAPSHOT"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
 
 crossScalaVersions := Seq("2.10.4", "2.11.1")
 
@@ -33,4 +33,21 @@ scalacOptions ++= Seq(
   "-language:higherKinds"
 )
 
+ScoverageKeys.minimumCoverage := 70
+
+ScoverageKeys.failOnMinimumCoverage := false
+
+ScoverageKeys.highlighting := {
+  if (scalaBinaryVersion.value == "2.10") false
+  else false
+}
+
+publishArtifact in Test := false
+
+parallelExecution in ScoverageTest := false
+
 parallelExecution in Test := false
+
+instrumentSettings
+
+coverallsSettings
