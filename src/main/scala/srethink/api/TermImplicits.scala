@@ -32,11 +32,11 @@ trait TermImplicits {
 
   }
 
-  @inline implicit def dslAsRTermOps(dsl: DSL) = RTermOps(dsl.toTerm)
-  @inline implicit def strAsTerm(value: String)= strTerm(value)
-  @inline implicit def intAsTerm(value: Int) = numTerm(value)
-  @inline implicit def longAsTerm(value: Long) = numTerm(value)
-  @inline implicit def floatAsTerm(value: Float) = numTerm(value)
-  @inline implicit def doubleAsTerm(value: Double) = numTerm(value)
-  @inline implicit def booleanAsTerm(value: Boolean) = boolTerm(value)
+  @inline implicit def dslAsRTermOps(dsl: DSL): RTermOps = RTermOps(dsl.term)
+  @inline implicit def strAsTerm(value: String):DatumTerm[RStr] = strTerm(value)
+  @inline implicit def intAsTerm(value: Int): DatumTerm[RNum] = numTerm(value)
+  @inline implicit def longAsTerm(value: Long): DatumTerm[RNum] = numTerm(value)
+  @inline implicit def floatAsTerm(value: Float): DatumTerm[RNum] = numTerm(value)
+  @inline implicit def doubleAsTerm(value: Double): DatumTerm[RNum] = numTerm(value)
+  @inline implicit def booleanAsTerm(value: Boolean): DatumTerm[RBool] = boolTerm(value)
 }
