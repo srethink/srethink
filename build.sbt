@@ -49,3 +49,5 @@ parallelExecution in ScoverageTest := false
 parallelExecution in Test := false
 
 instrumentSettings
+
+coverallsSettings

@@ -17,4 +17,4 @@ scala:
 jdk:
   - openjdk6
 
-script: sbt clean scoverage:test
+script: sbt coveralls +test
