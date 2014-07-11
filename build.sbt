@@ -34,3 +34,7 @@ scalacOptions ++= Seq(
 )
 
 parallelExecution in Test := false
+
+ScoverageSbtPlugin.instrumentSettings
+
+CoverallsPlugin.coverallsSettings
