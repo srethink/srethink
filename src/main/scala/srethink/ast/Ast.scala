@@ -218,6 +218,13 @@ case class SUB(left: RTerm, right: RTerm) extends RTerm {
   )
 }
 
+case class SUM(sequence: RTerm, field: DatumTerm[RStr]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.SUM),
+    args = Seq(sequence.toTerm, field.toTerm)
+  )
+}
+
 case class Filter(sequence: RTerm, func: RTerm) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.FILTER),
@@ -250,5 +257,12 @@ case class Skip(sequence: RTerm, offset: DatumTerm[RNum]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.SKIP),
     args = Seq(sequence.toTerm, offset.toTerm)
+  )
+}
+
+case class WithFields(term: RTerm, fields: Seq[DatumTerm[RStr]]) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.WITH_FIELDS),
+    args = fields.map(_.toTerm)
   )
 }
