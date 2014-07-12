@@ -18,6 +18,17 @@ trait REncoder[-T] {
 
 trait BasicCodecs {
 
+  implicit object BooleanEncoder extends REncoder[Boolean] with RDecoder[Boolean] {
+    def encode(t: Boolean) = new RBool(t)
+    def decode(t: Option[Datum])= {
+      for {
+        d <- t
+        tp <- d.`type` if tp == R_BOOL
+        v <- d.rBool
+      } yield v
+    }
+  }
+
   implicit object  IntEncoder extends REncoder[Int] with RDecoder[Int] {
     def encode(t: Int) = new RNum(t)
     def decode(t: Option[Datum]) = {
@@ -27,7 +38,6 @@ trait BasicCodecs {
         v <- d.rNum
       } yield v.toInt
     }
-
   }
 
   implicit object  LongEncoder extends REncoder[Long] with RDecoder[Long] {
