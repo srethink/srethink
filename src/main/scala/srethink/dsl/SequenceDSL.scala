@@ -20,8 +20,12 @@ class SequenceDSL(
     new SequenceDSL(Map(term, body))
   }
 
-  def limit(offset: Int, size: Int) = {
-    new SequenceDSL(Limit(Skip(term, offset), size))
+  def limit(size: Int) = {
+    new SequenceDSL(Limit(term, size))
+  }
+
+  def skip(offset: Int) = {
+    new SequenceDSL(Skip(term, offset))
   }
 
   def fields(fields: String*) = {
