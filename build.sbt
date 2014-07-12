@@ -42,8 +42,6 @@ ScoverageKeys.highlighting := {
   else false
 }
 
-ScoverageKeys.excludedPackages in ScoverageCompile := "^srethink\\.protocol\\..*"
-
 publishArtifact in Test := false
 
 parallelExecution in ScoverageTest := false
