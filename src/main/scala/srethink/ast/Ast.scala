@@ -162,11 +162,10 @@ case class TableDrop(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTe
   )
 }
 
-case class Insert[T <: RDatum](table: RTable, data: Seq[DatumTerm[T]], db: Option[RDb] = None) extends RTerm {
+case class Insert[T <: RDatum](table: RTable, data: Seq[RDatum], db: Option[RDb] = None) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.INSERT),
-    `args` = table.toTerm +: data.map(_.toTerm)
-  )
+    `args` = table.toTerm :: new DatumTerm(new RArray(data)).toTerm :: Nil)
 }
 
 class Var(val id: Int) extends AnyVal with RTerm {

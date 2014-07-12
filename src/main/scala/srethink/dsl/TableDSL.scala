@@ -10,7 +10,6 @@ class TableDSL(table: RTable)
 
   def insert[T: REncoder](items: T*) = {
     val encoder = implicitly[REncoder[T]]
-    Insert(table, items.map(t => DatumTerm(encoder.encode(t))))
-    Insert(table, items.map(t => DatumTerm(encoder.encode(t))))
+    Insert(table, items.map(encoder.encode))
   }
 }

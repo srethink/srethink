@@ -103,7 +103,7 @@ trait WithTestTable extends WithTestDatabase {
         "age" -> new RNum(100)
       )
     )
-    ready(Insert(table, new DatumTerm(testDoc) :: Nil))
+    ready(Insert(table, testDoc :: Nil))
   }
 
 }
