@@ -2,7 +2,7 @@ package srethink.dsl
 
 import srethink.api._
 
-class SumFuncSpec extends DSLSpec {
+class SumSpec extends DSLSpec {
   "sum function" should {
     "sum fields with fields" in {
       val matchers = for {
