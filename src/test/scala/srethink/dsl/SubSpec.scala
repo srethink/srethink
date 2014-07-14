@@ -2,7 +2,7 @@ package srethink.dsl
 
 import srethink.api._
 
-class SubFuncSpec extends DSLSpec {
+class SubSpec extends DSLSpec {
   "sub function" should {
     "sub fields with fields" in {
       val matchers = for {
