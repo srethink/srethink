@@ -8,14 +8,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.collection.immutable._
+import srethink._
 
 class NettyConnectionSpec extends Specification {
 
   "connection" should  {
     "connect to server" in new srethink.WithConnection {
       //wait connection success
-      Thread.sleep(1000)
-      connection.isConnected must beEqualTo(true)
+      queryExecutor.connectionManager.get.isConnected must beTrue
     }
   }
 }

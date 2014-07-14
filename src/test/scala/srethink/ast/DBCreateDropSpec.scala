@@ -1,6 +1,5 @@
 package srethink.ast
 
-import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import srethink.protocol.Response.ResponseType._
 import srethink._

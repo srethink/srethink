@@ -10,6 +10,8 @@ trait Connection {
 
   def connect()
 
+  def isConnected: Boolean
+
   def query(query: Query): Future[Response]
 
   def close()

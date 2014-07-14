@@ -22,10 +22,9 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def close() = channel.foreach { c =>
     c.close()
     c.getCloseFuture().awaitUninterruptibly()
-
   }
 
-  def isConnected = handshake.isCompleted
+  def isConnected = channel.map(_.isOpen).getOrElse(false)
 
   def query(query: Query): Future[Response] = {
     val newPromise = Promise[Response]()
@@ -49,6 +48,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     val bootstrap = new ClientBootstrap(config.channelFactory)
     val bufferFactory = new HeapChannelBufferFactory(java.nio.ByteOrder.LITTLE_ENDIAN)
     bootstrap.setOption("bufferFactory", bufferFactory)
+    bootstrap.setOption("child.keepAlive", true)
 
     //Set pipeline factory
     val pipelineFactory = new ChannelPipelineFactory {
