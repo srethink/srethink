@@ -165,7 +165,7 @@ case class TableDrop(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTe
 case class Insert[T <: RDatum](table: RTable, data: Seq[RDatum], db: Option[RDb] = None) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.INSERT),
-    `args` = table.toTerm :: new DatumTerm(new RArray(data)).toTerm :: Nil)
+    `args` = table.toTerm :: arrayTerm(data).toTerm :: Nil)
 }
 
 class Var(val id: Int) extends AnyVal with RTerm {
@@ -200,6 +200,13 @@ case class LT(left: RTerm, right: RTerm) extends RPredicate {
   def toTerm = Term(
     `type` = Some(TermType.LT),
     args = Seq(left.toTerm, right.toTerm)
+  )
+}
+
+case class NOT(term: RTerm) extends RPredicate {
+  def toTerm = Term(
+    `type` = Some(TermType.NOT),
+    args = Seq(term.toTerm)
   )
 }
 
