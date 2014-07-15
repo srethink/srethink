@@ -26,7 +26,13 @@ trait TermQuery extends Connected  {
   }
 
   def ready(q: RTerm) = {
-    Await.result(query(q), duration.Duration.Inf)
+    try {
+      Await.result(query(q), duration.Duration.Inf)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace
+
+    }
   }
 }
 
@@ -43,7 +49,7 @@ trait TermQueryMatchers extends  TermQuery {
 
   def expectNull(term: RTerm) = expect(term) {
     case QuerySuccess(successType, data) =>
-         data(0).`type`.get === Datum.DatumType.R_NULL
+      data(0).`type`.get === Datum.DatumType.R_NULL
   }
 
 }
@@ -73,12 +79,16 @@ trait WithTestTable extends WithTestDatabase {
   val opts = RTermOpts("primary_key" -> strTerm("id"))
 
   override def before = {
+    println("creating test database")
     super.before
+    println("creating test table")
     ready(TableCreate(tb("test"), opts = opts))
   }
 
   override def after = {
+    println("dropping test table")
     ready(TableDrop(tb("test")))
+    println("dropping test database")
     super.after
   }
 
