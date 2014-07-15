@@ -12,35 +12,33 @@ trait ConnectionManager {
 }
 
 class NettyConnectionManager(val config : NettyRethinkConfig) extends ConnectionManager {
-  @volatile private var connection: Connection = {
-    synchronized {
-      val c = new NettyConnection(config)
-      c.connect()
-      c
-    }
-  }
+  @volatile private var connection: Option[Connection] = None
 
   def get() = {
-    if(connection.isConnected) {
-      connection
+    if(isConnected) {
+      connection.get
     } else {
       synchronized {
-        if(connection.isConnected) {
-          connection
+        if(isConnected) {
+          connection.get
         } else {
           val newConnection = new NettyConnection(config)
           newConnection.connect()
-          connection = newConnection
-          connection
+          connection = Some(newConnection)
+          connection.get
         }
       }
     }
   }
 
+  private def isConnected = {
+    (for(c <- connection if c.isConnected) yield true).getOrElse(false)
+  }
+
   def close() {
     synchronized {
-      if(connection.isConnected) {
-        connection.close()
+      if(isConnected) {
+        connection.foreach(_.close())
       }
     }
   }
