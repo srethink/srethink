@@ -44,9 +44,7 @@ ScoverageKeys.highlighting := {
 
 publishArtifact in Test := false
 
-parallelExecution in ScoverageTest := false
-
-parallelExecution in Test := false
+parallelExecution in Global := false
 
 instrumentSettings
 

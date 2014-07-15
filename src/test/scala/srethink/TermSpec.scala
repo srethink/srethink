@@ -4,8 +4,6 @@ import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
 import org.specs2.specification._
 import org.specs2.matcher.MatchResult
-import scala.collection.immutable.Seq
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import srethink.api._
 import srethink.ast._
@@ -13,7 +11,7 @@ import srethink.protocol._
 import srethink.protocol.Response.ResponseType._
 import AstHelper._
 
-trait TermQuery extends Connected with TokenGenerator {
+trait TermQuery extends Connected  {
 
   def db(dbName: String) = {
     strTerm(dbName)
@@ -24,46 +22,41 @@ trait TermQuery extends Connected with TokenGenerator {
   }
 
   def query(term: RTerm) = {
-    val q = Query(
-      `type` = Some(Query.QueryType.START),
-      query = Some(term.toTerm),
-      token = Some(nextToken)
-    )
-    connection.query(q)
+    queryExecutor.query(term)
   }
 
   def ready(q: RTerm) = {
-    Await.result(query(q), duration.Duration.Inf)
+    try {
+      Await.result(query(q), duration.Duration.Inf)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace
+
+    }
   }
 }
 
 trait TermQueryMatchers extends  TermQuery {
   this: Specification =>
 
-  def expect[T](term: RTerm)(matcher: Response => MatchResult[T]) = {
-    query(term).map{matcher}.await(100)
+  def expect[T](term: RTerm)(matcher: QuerySuccess => MatchResult[T]) = {
+    query(term).map{matcher}.await(1000)
   }
 
-  def expectSuccessAtom(term: RTerm) = expect(term)(_.`type`.get === Response.ResponseType.SUCCESS_ATOM)
+  def expectSuccessAtom(term: RTerm) = expect(term)(_.successType === Response.ResponseType.SUCCESS_ATOM)
 
-  def expectNotNull(term: RTerm) = expect(term)(_.response(0).`type`.get !== Datum.DatumType.R_NULL)
+  def expectNotNull(term: RTerm) = expect(term)(_.data(0).`type`.get !== Datum.DatumType.R_NULL)
 
   def expectNull(term: RTerm) = expect(term) {
-    case Response(Some(tpe), Some(token), response, backtrace, profile) =>
-      tpe must be_==(SUCCESS_ATOM) or be_==(SUCCESS_SEQUENCE) or be_==(SUCCESS_PARTIAL)
-      response(0).`type`.get === Datum.DatumType.R_NULL
+    case QuerySuccess(successType, data) =>
+      data(0).`type`.get === Datum.DatumType.R_NULL
   }
 
 }
 
-trait TermSpec extends Specification with TermQueryMatchers {
-  import scala.concurrent._
-
+trait TermSpec extends org.specs2.mutable.Specification with TermQueryMatchers {
   sequential // disable parallel execution
-
-
-
-  override def map(fs: =>Fragments) = Step(connect())  ^ fs ^ Step(disconnect())
+  override def map(fs: =>Fragments) = fs ^ Step(disconnect())
 }
 
 trait WithTestDatabase extends TermSpec with BeforeAfterExample {
@@ -86,12 +79,16 @@ trait WithTestTable extends WithTestDatabase {
   val opts = RTermOpts("primary_key" -> strTerm("id"))
 
   override def before = {
+    println("creating test database")
     super.before
+    println("creating test table")
     ready(TableCreate(tb("test"), opts = opts))
   }
 
   override def after = {
+    println("dropping test table")
     ready(TableDrop(tb("test")))
+    println("dropping test database")
     super.after
   }
 

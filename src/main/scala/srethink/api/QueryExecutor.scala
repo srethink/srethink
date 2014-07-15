@@ -11,9 +11,17 @@ object TokenGenerator {
   def nextToken: Long = TokenGenerator.gen.incrementAndGet
 }
 
-private[srethink] trait QueryExecutor {
-  val connection: Connection
-  implicit lazy val ctx = connection.config.executionContext
+trait QueryExecutor {
+  def query(term: RTerm): Future[QuerySuccess]
+  def headOption[T: RDecoder](term: RTerm): Future[Option[T]]
+  def take[T: RDecoder](term: RTerm): Future[Seq[T]]
+  def run(term: RTerm): Future[Boolean]
+  def close()
+}
+
+class ManagedQueryExecutor(val connectionManager: ConnectionManager) extends QueryExecutor {
+
+  implicit lazy val ctx = connectionManager.config.executionContext
 
   def query(term: RTerm) = {
     val q = Query(
@@ -21,7 +29,7 @@ private[srethink] trait QueryExecutor {
       query = Some(term.toTerm),
       token = Some(TokenGenerator.nextToken)
     )
-    normalize(connection.query(q))
+    normalize(connectionManager.get().query(q))
   }
 
   def headOption[T: RDecoder](term: RTerm): Future[Option[T]] = {
@@ -41,6 +49,8 @@ private[srethink] trait QueryExecutor {
   def run(term: RTerm): Future[Boolean] = {
     query(term).map(_ => true)
   }
+
+  def close() = connectionManager.close()
 
   private def normalize(resp: Future[Response]) = {
     import ResponseType._
