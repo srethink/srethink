@@ -49,3 +49,5 @@ parallelExecution in Global := false
 instrumentSettings
 
 coverallsSettings
+
+ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
