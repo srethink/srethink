@@ -11,3 +11,5 @@ Features
 
 +  Netty based network IO
 +  Asynchronously, future based API
++  Protobuf based serialization
++  Macro generated encoder/decoder for case/normal class
