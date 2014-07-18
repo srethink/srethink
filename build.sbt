@@ -46,9 +46,8 @@ publishArtifact in Test := false
 
 parallelExecution in Global := false
 
-ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
-
-
 instrumentSettings
 
 coverallsSettings
+
+ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
