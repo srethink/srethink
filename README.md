@@ -1,5 +1,5 @@
 [![Stories in Ready](https://badge.waffle.io/jilen/srethink.png?label=ready&title=Ready)](https://waffle.io/jilen/srethink)
-[![Build Status](https://travis-ci.org/jilen/srethink.svg?branch=master)](https://travis-ci.org/jilen/srethink)
+[![Build Status](https://travis-ci.org/srethink/srethink.svg?branch=master)](https://travis-ci.org/srethink/srethink)
 [![Coverage Status](https://img.shields.io/coveralls/jilen/srethink.svg)](https://coveralls.io/r/jilen/srethink?branch=master)
 
 Srethink -- A rethinkdb driver for scala
