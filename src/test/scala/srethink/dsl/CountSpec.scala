@@ -3,8 +3,8 @@ package srethink.dsl
 import srethink.api._
 
 class CountSpec extends DSLSpec {
-  "sum function" should {
-    "sum fields with fields" in {
+  "count api" should {
+    "count sequence" in {
       val count = 100
       val men = (1 to count).map(i => man.copy(id = Some(i)))
       val matchers = for {

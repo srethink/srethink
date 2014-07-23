@@ -40,4 +40,8 @@ object AstHelper {
       body(args(0))
     }
   }
+
+  @inline def epochTime(date: java.util.Date) = {
+    new EpochTime(date)
+  }
 }
