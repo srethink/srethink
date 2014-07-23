@@ -1,4 +1,4 @@
-organization := "srethink"
+organization := "org.srethink"
 
 name := "srethink"
 
