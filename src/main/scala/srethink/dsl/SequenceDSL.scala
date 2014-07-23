@@ -35,4 +35,8 @@ class SequenceDSL(
   def sum(field: String) = {
     new SUM(term, field)
   }
+
+  def count() = {
+    new Count(term)
+  }
 }
