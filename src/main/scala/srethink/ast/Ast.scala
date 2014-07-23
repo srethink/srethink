@@ -279,3 +279,10 @@ case class WithFields(term: RTerm, fields: Seq[DatumTerm[RStr]]) extends RTerm {
     args = fields.map(_.toTerm)
   )
 }
+
+case class During(term: RTerm, from: EpochTime, to: EpochTime) extends RPredicate{
+  def toTerm = Term(
+    `type` = Some(TermType.DURING),
+    args = Seq(term.toTerm, from.toTerm, to.toTerm)
+  )
+}

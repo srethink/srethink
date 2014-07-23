@@ -1,8 +1,9 @@
 package srethink.api
 
 import srethink.ast._
-import AstHelper._
 import srethink.dsl._
+import java.util.Date
+import AstHelper._
 
 trait TermImplicits {
 
@@ -18,6 +19,8 @@ trait TermImplicits {
     def < (that: RTerm) = LT(term, that)
     def + (that: RTerm) = ADD(Seq(term, that))
     def - (that: RTerm) = SUB(term, that)
+
+    def during(from: Date, to: Date) = new During(term, from, to)
 
     def first[T: RDecoder](implicit executor: QueryExecutor) = {
       executor.headOption[T](term)
@@ -49,4 +52,5 @@ trait TermImplicits {
   @inline implicit def floatAsTerm(value: Float): DatumTerm[RNum] = numTerm(value)
   @inline implicit def doubleAsTerm(value: Double): DatumTerm[RNum] = numTerm(value)
   @inline implicit def booleanAsTerm(value: Boolean): DatumTerm[RBool] = boolTerm(value)
+  @inline implicit def dateAsEpochTime(value: Date): EpochTime = epochTime(value)
 }
