@@ -266,6 +266,13 @@ case class Skip(sequence: RTerm, offset: DatumTerm[RNum]) extends RTerm {
   )
 }
 
+case class Count(sequence: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.COUNT),
+    args = Seq(sequence.toTerm)
+  )
+}
+
 case class WithFields(term: RTerm, fields: Seq[DatumTerm[RStr]]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.WITH_FIELDS),
