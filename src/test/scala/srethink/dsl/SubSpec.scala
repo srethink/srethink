@@ -9,7 +9,7 @@ class SubSpec extends DSLSpec {
         succ <- r.table("test").insert(man).run  if succ
         sub <- r.table("test").map{p => p.height - p.weight}.first[Long]
       } yield {
-        sub must beSome(man.height - man.weight.get)
+        sub must be_==(man.height - man.weight.get)
       }
       matchers.await
     }
@@ -19,7 +19,7 @@ class SubSpec extends DSLSpec {
         succ <- r.table("test").insert(man).run  if succ
         sum <- r.table("test").map{p => p.height - 1000}.first[Long]
       } yield {
-        sum must beSome(man.height - 1000)
+        sum must be_==(man.height - 1000)
       }
       matchers.await
     }

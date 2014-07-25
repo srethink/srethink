@@ -10,8 +10,8 @@ class DuringSpec extends DSLSpec {
         b <- r.table("test").filter(_.birth.during(yearsAgo(11), yearsAgo(9))).first[Person]
         m <- r.table("test").filter(_.birth.during(yearsAgo(31), yearsAgo(29))).first[Person]
       } yield {
-        b.map(_.id) must beSome(boy.id)
-        m.map(_.id) must beSome(man.id)
+        b.id must be_==(boy.id)
+        m.id must be_==(man.id)
       }
       matchers.await
     }

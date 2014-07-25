@@ -14,6 +14,7 @@ object TokenGenerator {
 trait QueryExecutor {
   def query(term: RTerm): Future[QuerySuccess]
   def headOption[T: RDecoder](term: RTerm): Future[Option[T]]
+  def head[T: RDecoder](term: RTerm): Future[T]
   def take[T: RDecoder](term: RTerm): Future[Seq[T]]
   def run(term: RTerm): Future[Boolean]
   def close()
@@ -37,6 +38,10 @@ class ManagedQueryExecutor(val connectionManager: ConnectionManager) extends Que
     query(term).map {
       case QuerySuccess(_, data) => decoder.decode(data.headOption)
     }
+  }
+
+  def head[T: RDecoder](term: RTerm): Future[T] = {
+    headOption[T](term).map(_.get)
   }
 
   def take[T: RDecoder](term: RTerm): Future[Seq[T]] = {

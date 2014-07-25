@@ -29,14 +29,14 @@ class SequenceDSL(
   }
 
   def fields(fields: String*) = {
-    new WithFields(term, fields.map(strAsTerm))
+    new SequenceDSL(WithFields(term, fields.map(strAsTerm)))
   }
 
   def sum(field: String) = {
-    new SUM(term, field)
+    new Atom(SUM(term, field))
   }
 
   def count() = {
-    new Count(term)
+    new Atom(Count(term))
   }
 }

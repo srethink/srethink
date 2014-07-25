@@ -21,8 +21,16 @@ trait TermImplicits {
     def - (that: RTerm) = SUB(term, that)
 
     def during(from: Date, to: Date) = new During(term, from, to)
+  }
+
+  implicit class DSLExecutor(dsl: DSL) {
+    import dsl._
 
     def first[T: RDecoder](implicit executor: QueryExecutor) = {
+      executor.head[T](term)
+    }
+
+    def firstOption[T: RDecoder](implicit executor: QueryExecutor) = {
       executor.headOption[T](term)
     }
 
@@ -34,6 +42,7 @@ trait TermImplicits {
       executor.run(term)
     }
   }
+
 
   implicit class RPredicateOps(val term: RTerm) {
     def unary_!  = NOT(term)

@@ -10,7 +10,7 @@ class SumSpec extends DSLSpec {
         _ <- r.table("test").insert(boy).run
         sum <- r.table("test").sum("height").first[Int]
       } yield {
-        sum must beSome(man.height + boy.height)
+        sum must be_==(man.height + boy.height)
       }
       matchers.await
     }
