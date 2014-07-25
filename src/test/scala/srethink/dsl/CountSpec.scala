@@ -12,8 +12,8 @@ class CountSpec extends DSLSpec {
         filterdCount <- r.table("test").filter(_.id > count / 2).count.first[Int]
         allCount <- r.table("test").count.first[Int]
       } yield {
-        filterdCount must beSome(count / 2)
-        allCount must beSome(count)
+        filterdCount must be_==(count / 2)
+        allCount must be_==(count)
       }
       matchers.await
     }

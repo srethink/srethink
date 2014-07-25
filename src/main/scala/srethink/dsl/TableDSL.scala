@@ -6,10 +6,10 @@ import srethink.api._
 class TableDSL(table: RTable)
     extends SequenceDSL(table) {
 
-  def get(id: DatumTerm[_ <: RDatum]) = Get(table, id)
+  def get(id: DatumTerm[_ <: RDatum]) = new Atom(Get(table, id))
 
   def insert[T: REncoder](items: T*) = {
     val encoder = implicitly[REncoder[T]]
-    Insert(table, items.map(encoder.encode))
+    new Atom(Insert(table, items.map(encoder.encode)))
   }
 }

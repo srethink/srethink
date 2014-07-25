@@ -276,7 +276,7 @@ case class Count(sequence: RTerm) extends RTerm {
 case class WithFields(term: RTerm, fields: Seq[DatumTerm[RStr]]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.WITH_FIELDS),
-    args = fields.map(_.toTerm)
+    args = term.toTerm +: fields.map(_.toTerm)
   )
 }
 

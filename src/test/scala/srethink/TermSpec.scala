@@ -13,14 +13,6 @@ import AstHelper._
 
 trait TermQuery extends Connected  {
 
-  def db(dbName: String) = {
-    strTerm(dbName)
-  }
-
-  def tb(name: String) = {
-    strTerm(name)
-  }
-
   def query(term: RTerm) = {
     queryExecutor.query(term)
   }
@@ -61,19 +53,21 @@ trait TermSpec extends org.specs2.mutable.Specification with TermQueryMatchers {
 
 trait WithTestDatabase extends TermSpec with BeforeAfterExample {
 
-  val database = new RDb("test")
+  def tableName = "test"
+
+  def database = new RDb(tableName)
 
   def before = {
-    ready(DBCreate(db("test")))
+    ready(DBCreate(tableName))
   }
 
   def after = {
-    ready(DBDrop(db("test")))
+    ready(DBDrop(tableName))
   }
 }
 
 trait WithTestTable extends WithTestDatabase {
-  val table = RTable("test",
+  val table = RTable(tableName,
     rdb = Some(database))
 
   val opts = RTermOpts("primary_key" -> strTerm("id"))
@@ -82,12 +76,12 @@ trait WithTestTable extends WithTestDatabase {
     println("creating test database")
     super.before
     println("creating test table")
-    ready(TableCreate(tb("test"), opts = opts))
+    ready(TableCreate(tableName, opts = opts))
   }
 
   override def after = {
     println("dropping test table")
-    ready(TableDrop(tb("test")))
+    ready(TableDrop(tableName))
     println("dropping test database")
     super.after
   }
