@@ -1,7 +1,6 @@
 package srethink.api
 
 import scala.concurrent.Future
-import srethink.ast._
 import srethink.net._
 import srethink.protocol._
 import srethink.protocol.Response.ResponseType

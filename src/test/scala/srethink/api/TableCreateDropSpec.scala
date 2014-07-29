@@ -1,7 +1,6 @@
-package srethink.ast
+package srethink.api
 
 import srethink._
-import srethink.api._
 
 class TableCreateDropSpec extends WithTestDatabase  {
 

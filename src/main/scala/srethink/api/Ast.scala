@@ -1,4 +1,4 @@
-package srethink.ast
+package srethink.api
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -284,5 +284,19 @@ case class During(term: RTerm, from: EpochTime, to: EpochTime) extends RPredicat
   def toTerm = Term(
     `type` = Some(TermType.DURING),
     args = Seq(term.toTerm, from.toTerm, to.toTerm)
+  )
+}
+
+case class Group(sequence: RTerm, field: String) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.GROUP),
+    args = sequence.toTerm +: strTerm(field).toTerm +: Nil
+  )
+}
+
+case class UnGroup(groupedData: RTerm) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.UNGROUP),
+    args = Seq(groupedData.toTerm)
   )
 }
