@@ -14,7 +14,7 @@ libraryDependencies <<= scalaVersion{ scalaVersion =>
     "org.scala-lang" % "scala-reflect" % scalaVersion,
     "io.netty" % "netty" % "3.9.0.Final",
     "net.sandrogrzicic" %% "scalabuff-runtime" % "1.3.8",
-    "org.specs2" %% "specs2" % "2.3.11" % "test")
+    "org.specs2" %% "specs2" % "2.3.13" % "test")
   majorV match {
     case (2, 10) =>
       shared ++ Seq(
