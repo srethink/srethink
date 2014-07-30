@@ -26,7 +26,7 @@ class EncoderMacroHelper[C <: Context](val c: C) {
     val tpe = weakTypeOf[T]
     val method = encodeMethod(tpe)
     val encoderTree = q"""
-     import srethink.ast._
+     import srethink.api._
      new REncoder[$tpe] {
        $method
      }"""
@@ -37,7 +37,7 @@ class EncoderMacroHelper[C <: Context](val c: C) {
     val tree =  tpe.declarations.collect {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
-    val datum = q"srethink.ast.RDatum"
+    val datum = q"srethink.api.RDatum"
     val pairs = tree.foldLeft(q"scala.collection.immutable.Seq[(String, RDatum)]()") {
       case (pairsTree, accessorTree) =>
         val valueType = accessorTree.returnType
@@ -49,7 +49,7 @@ class EncoderMacroHelper[C <: Context](val c: C) {
         val value = q"t.$accessorTree"
         q"$pairsTree :+ $name -> $encoder.encode($value)"
     }
-    val encodedDatum = q"new srethink.ast.RObject($pairs)"
+    val encodedDatum = q"new RObject($pairs)"
     q"def encode(t: $tpe) = $encodedDatum"
 
   }

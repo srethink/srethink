@@ -2,7 +2,7 @@ package srethink.api
 
 import java.util.Date
 import srethink.protocol._
-import srethink.ast._
+import srethink.api._
 import Datum.DatumType._
 
 class CodecException(val field: String, tpe: String = "", value: Any = "" )
@@ -153,4 +153,7 @@ trait AdditionalCodec {
       }
     }
   }
+
+  implicit def seqDecoder[A: RDecoder] = traversableDecoder[Seq, A]
+  implicit def setDecoder[A: RDecoder] = traversableDecoder[Set, A]
 }

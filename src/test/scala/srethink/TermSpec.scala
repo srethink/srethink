@@ -6,7 +6,6 @@ import org.specs2.specification._
 import org.specs2.matcher.MatchResult
 import scala.concurrent._
 import srethink.api._
-import srethink.ast._
 import srethink.protocol._
 import srethink.protocol.Response.ResponseType._
 import AstHelper._

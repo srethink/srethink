@@ -1,4 +1,4 @@
-package srethink.ast
+package srethink.api
 
 import srethink.protocol._
 

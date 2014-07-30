@@ -1,4 +1,4 @@
-package srethink.dsl
+package srethink.api
 
 import srethink._
 import srethink.api._
@@ -7,6 +7,7 @@ import java.util.Date
 case class Person(
   id: Option[Long],
   name: String,
+  gender: String,
   birth: Date,
   height: Int,
   weight: Option[Int],
@@ -25,9 +26,9 @@ object Person {
 
 trait DSLSpec extends WithTestTable {
 
-  val boy = Person(Some(2), "boy", yearsAgo(10), 130, Some(40), 0.00, 0.00f, true, None, Nil)
-  val women = Person(Some(3), "woman", yearsAgo(27), 160, Some(45), 100.00, 40.00f, false, None, Nil)
-  val man = Person(Some(1), "man",  yearsAgo(30), 175, Some(60), 200.00, 40.00f, false, Some(women), boy :: Nil)
+  val boy = Person(Some(2), "boy","m" ,yearsAgo(10), 130, Some(40), 0.00, 0.00f, true, None, Nil)
+  val women = Person(Some(3), "woman", "f", yearsAgo(27), 160, Some(45), 100.00, 40.00f, false, None, Nil)
+  val man = Person(Some(1), "man", "m", yearsAgo(30), 175, Some(60), 200.00, 40.00f, false, Some(women), boy :: Nil)
 
   val persons = r.table(tableName)
 

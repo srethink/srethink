@@ -4,9 +4,9 @@ name := "srethink"
 
 version := "0.0.1-SNAPSHOT"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
-crossScalaVersions := Seq("2.10.4", "2.11.1")
+crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 libraryDependencies <<= scalaVersion{ scalaVersion =>
   val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
@@ -33,9 +33,9 @@ scalacOptions ++= Seq(
   "-language:higherKinds"
 )
 
-ScoverageKeys.minimumCoverage := 70
+ScoverageKeys.minimumCoverage := 80
 
-ScoverageKeys.failOnMinimumCoverage := false
+ScoverageKeys.failOnMinimumCoverage := true
 
 ScoverageKeys.highlighting := {
   if (scalaBinaryVersion.value == "2.10") false

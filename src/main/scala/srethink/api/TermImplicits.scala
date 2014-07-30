@@ -1,7 +1,6 @@
 package srethink.api
 
-import srethink.ast._
-import srethink.dsl._
+import srethink.api._
 import java.util.Date
 import AstHelper._
 

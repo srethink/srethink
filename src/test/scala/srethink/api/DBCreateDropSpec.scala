@@ -1,9 +1,8 @@
-package srethink.ast
+package srethink.api
 
 import org.specs2.specification.Scope
 import srethink.protocol.Response.ResponseType._
 import srethink._
-import srethink.api._
 
 class DBCreateDropSpec extends TermSpec {
   "db create ast" should {
