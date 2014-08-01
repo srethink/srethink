@@ -7,8 +7,8 @@ import srethink._
 class DBCreateDropSpec extends TermSpec {
   "db create ast" should {
     "create and drop db" in  {
-      expectSuccessAtom(DBCreate("foo"))
-      expectSuccessAtom(DBDrop("foo"))
+      expectSuccessAtom(DBCreate("aaa"))
+      expectSuccessAtom(DBDrop("aaa"))
      }
   }
 }

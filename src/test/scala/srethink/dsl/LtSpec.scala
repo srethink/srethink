@@ -1,14 +1,12 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 class LtSpec extends DSLSpec {
   "lt function" should {
     "filter fields" in {
       val matchers = for {
-        succ <- r.table("test").insert(man).run  if succ
-        p <- r.table("test").filter(_.height < man.height + 1).firstOption[Person]
-        notExists <- r.table("test").filter(_.height < man.height - 1).firstOption[Person]
+        succ <- persons.insert(man).run  if succ
+        p <- persons.filter(_.height < man.height + 1).firstOption[Person]
+        notExists <- persons.filter(_.height < man.height - 1).firstOption[Person]
       } yield {
         p must beSome
         notExists must beNone

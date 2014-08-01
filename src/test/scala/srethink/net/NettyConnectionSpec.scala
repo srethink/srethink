@@ -35,5 +35,12 @@ class NettyConnectionSpec extends Specification {
         b <- barFut
       } yield (f must beAnInstanceOf[Exception]) and (b must beAnInstanceOf[Exception])
     }
+
+    "can close multi times" in new srethink.WithConnection with TermQuery {
+      val conn = queryExecutor.connectionManager.get
+      conn.close()
+      conn.close()
+      conn.close()
+    }
   }
 }

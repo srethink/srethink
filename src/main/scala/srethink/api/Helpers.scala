@@ -4,8 +4,8 @@ import srethink.protocol._
 
 object AstHelper {
 
-  @inline def table(name: String, database: Option[String]) = {
-    new RTable(name, database.map(new RDb(_)))
+  @inline def table(name: String, database: String) = {
+    new RTable(name, new RDb(database))
   }
 
   @inline def strTerm(str: String) = {

@@ -88,20 +88,13 @@ class DatumTerm[T <: RDatum](val rDatum: T) extends AnyVal with RTerm {
   def toTerm = Term(Some(TermType.DATUM),  Some(rDatum.toDatum))
 }
 
-object DatumTerm {
-  def apply(datum: RDatum) = new DatumTerm[RDatum](datum)
-}
-
 
 case class RTable(
   name: String,
-  rdb: Option[RDb] = None,
+  rdb: RDb,
   opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
   def toTerm = {
-    val args = rdb match {
-      case Some(db) => db.toTerm +: strTerm(name).toTerm +: Nil
-      case None => strTerm(name).toTerm +: Nil
-    }
+    val args = rdb.toTerm +: strTerm(name).toTerm +: Nil
     Term(
       `type` = Some(TermType.TABLE),
       `args` = args,
@@ -154,17 +147,17 @@ case class DBDrop(db: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(`type` = Some(TermType.DB_DROP), args = Seq(db.toTerm))
 }
 
-case class TableCreate(table: DatumTerm[RStr], opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
+case class TableCreate(db: RDb, table: DatumTerm[RStr], opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.TABLE_CREATE),
-    args = Seq(table.toTerm)
+    args = db.toTerm +: table.toTerm +: Nil
   )
 }
 
-case class TableDrop(table: DatumTerm[RStr], db: Option[RDb] = None) extends RTerm {
+case class TableDrop(database: RDb, table: DatumTerm[RStr]) extends RTerm {
   def toTerm = Term(
     `type` = Some(TermType.TABLE_DROP),
-    args = Seq(table.toTerm)
+    args = Seq(database.toTerm, table.toTerm)
   )
 }
 

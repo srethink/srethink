@@ -52,22 +52,23 @@ trait TermSpec extends org.specs2.mutable.Specification with TermQueryMatchers {
 
 trait WithTestDatabase extends TermSpec with BeforeAfterExample {
 
-  def tableName = "test"
+  def tableName = "test_tb"
 
-  def database = new RDb(tableName)
+  def databaseName = "test_db"
+
+  def database = new RDb(databaseName)
 
   def before = {
-    ready(DBCreate(tableName))
+    ready(DBCreate(databaseName))
   }
 
   def after = {
-    ready(DBDrop(tableName))
+    ready(DBDrop(databaseName))
   }
 }
 
 trait WithTestTable extends WithTestDatabase {
-  val table = RTable(tableName,
-    rdb = Some(database))
+  val table = RTable(tableName, database)
 
   val opts = RTermOpts("primary_key" -> strTerm("id"))
 
@@ -75,25 +76,13 @@ trait WithTestTable extends WithTestDatabase {
     println("creating test database")
     super.before
     println("creating test table")
-    ready(TableCreate(tableName, opts = opts))
+    ready(TableCreate(database, tableName, opts = opts))
   }
 
   override def after = {
     println("dropping test table")
-    ready(TableDrop(tableName))
+    ready(TableDrop(database, tableName))
     println("dropping test database")
     super.after
   }
-
-  trait WithTestData extends Scope {
-    val testDoc = new RObject(
-      Seq(
-        "id" -> new RNum(1),
-        "name" -> new RStr("foo"),
-        "age" -> new RNum(100)
-      )
-    )
-    ready(Insert(table, testDoc :: Nil))
-  }
-
 }

@@ -1,5 +1,5 @@
 package srethink.api
 
 object r {
-  def table(name: String, database: Option[String] = None) = new DSL(AstHelper.table(name, database))
+  def table(name: String, database: String) = new DSL(AstHelper.table(name, database))
 }
