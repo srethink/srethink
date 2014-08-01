@@ -52,4 +52,8 @@ class DSL(
     val encoder = implicitly[REncoder[T]]
     new DSL(Insert(term.asInstanceOf[RTable], items.map(encoder.encode)))
   }
+
+  def delete() = {
+    new DSL(Delete(term))
+  }
 }

@@ -300,3 +300,10 @@ case class UnGroup(groupedData: RTerm) extends RTerm {
     args = Seq(groupedData.toTerm)
   )
 }
+
+case class Delete(selection: RTerm, opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
+  def toTerm = Term(
+    `type` = Some(TermType.DELETE),
+    args = Seq(selection.toTerm)
+  )
+}
