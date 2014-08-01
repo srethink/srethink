@@ -41,7 +41,6 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def connect() = {
     val channelFuture = bootstrap().connect(new java.net.InetSocketAddress(config.hostname, config.port))
     channel = Some(channelFuture.getChannel)
-    channelFuture.awaitUninterruptibly()
     Await.ready(handshake.future, duration.Duration.Inf)
   }
 

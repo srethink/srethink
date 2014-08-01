@@ -12,6 +12,8 @@ import srethink.api._
 
 class NettyConnectionSpec extends Specification {
 
+  sequential
+
   def createDb(name: String) = Query(
     `type` = Some(Query.QueryType.START),
     query = Some(DBCreate(name).toTerm),
