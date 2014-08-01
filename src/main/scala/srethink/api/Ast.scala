@@ -97,10 +97,16 @@ case class RTable(
   name: String,
   rdb: Option[RDb] = None,
   opts: RTermOpts = RTerm.REmptyOpts) extends RTerm {
-  def toTerm = Term(
-    `type` = Some(TermType.TABLE),
-    `args` = Seq(strTerm(name).toTerm),
-    optargs = opts.toOptArgs)
+  def toTerm = {
+    val args = rdb match {
+      case Some(db) => db.toTerm +: strTerm(name).toTerm +: Nil
+      case None => strTerm(name).toTerm +: Nil
+    }
+    Term(
+      `type` = Some(TermType.TABLE),
+      `args` = args,
+      optargs = opts.toOptArgs)
+  }
 }
 
 class RDb(val name: String) extends AnyVal with RTerm {
