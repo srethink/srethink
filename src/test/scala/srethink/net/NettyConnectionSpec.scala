@@ -12,6 +12,8 @@ import srethink.api._
 
 class NettyConnectionSpec extends Specification {
 
+  sequential
+
   def createDb(name: String) = Query(
     `type` = Some(Query.QueryType.START),
     query = Some(DBCreate(name).toTerm),
@@ -34,6 +36,13 @@ class NettyConnectionSpec extends Specification {
         f <- fooFut
         b <- barFut
       } yield (f must beAnInstanceOf[Exception]) and (b must beAnInstanceOf[Exception])
+    }
+
+    "can close multi times" in new srethink.WithConnection with TermQuery {
+      val conn = queryExecutor.connectionManager.get
+      conn.close()
+      conn.close()
+      conn.close()
     }
   }
 }

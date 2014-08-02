@@ -1,6 +1,4 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 case class IdNamePair(
   id: Long,

@@ -1,8 +1,5 @@
 package srethink.api
 
-import srethink.api._
-
-
 case class NameGroup(group: String, reduction: Seq[Person])
 
 class GroupSpec extends DSLSpec {

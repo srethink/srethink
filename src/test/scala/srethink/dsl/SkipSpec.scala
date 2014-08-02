@@ -1,6 +1,4 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 class SkipSpec extends DSLSpec {
   "skip dsl" should {
@@ -8,10 +6,10 @@ class SkipSpec extends DSLSpec {
       val count = 10
       val men = (1 to count).map(i => man.copy(id = Some(i)))
       val matchers = for {
-        succ <- r.table("test").insert(men: _*).run if succ
-        persons <- r.table("test").skip(count / 2).list[Person]
+        succ <- persons.insert(men: _*).run if succ
+        ps <- persons.skip(count / 2).list[Person]
       } yield {
-        persons must have size(count - count / 2)
+        ps must have size(count - count / 2)
       }
       matchers.await
     }

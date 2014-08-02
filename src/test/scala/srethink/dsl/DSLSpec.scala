@@ -30,7 +30,7 @@ trait DSLSpec extends WithTestTable {
   val women = Person(Some(3), "woman", "f", yearsAgo(27), 160, Some(45), 100.00, 40.00f, false, None, Nil)
   val man = Person(Some(1), "man", "m", yearsAgo(30), 175, Some(60), 200.00, 40.00f, false, Some(women), boy :: Nil)
 
-  val persons = r.table(tableName)
+  val persons = r.table(tableName, databaseName)
 
   protected def yearsAgo(years: Int) = {
     val now = System.currentTimeMillis

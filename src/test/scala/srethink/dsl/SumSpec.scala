@@ -1,14 +1,12 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 class SumSpec extends DSLSpec {
   "sum function" should {
     "sum fields with fields" in {
       val matchers = for {
-        _ <- r.table("test").insert(man).run
-        _ <- r.table("test").insert(boy).run
-        sum <- r.table("test").sum("height").first[Int]
+        _ <- persons.insert(man).run
+        _ <- persons.insert(boy).run
+        sum <- persons.sum("height").first[Int]
       } yield {
         sum must be_==(man.height + boy.height)
       }

@@ -1,14 +1,12 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 class NotSpec extends DSLSpec {
   "not dsl" should {
     "filter elements that are not studends" in {
       val matchers = for {
-        succ <- r.table("test").insert(man).run  if succ
-        p <- r.table("test").filter(!_.isStudent).firstOption[Person]
-        notExists <- r.table("test").filter(_.isStudent).firstOption[Person]
+        succ <- persons.insert(man).run  if succ
+        p <- persons.filter(!_.isStudent).firstOption[Person]
+        notExists <- persons.filter(_.isStudent).firstOption[Person]
       } yield {
         p must beSome
         notExists must beNone

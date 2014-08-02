@@ -59,6 +59,5 @@ trait TermImplicits {
   @inline implicit def longAsTerm(value: Long): DatumTerm[RNum] = numTerm(value)
   @inline implicit def floatAsTerm(value: Float): DatumTerm[RNum] = numTerm(value)
   @inline implicit def doubleAsTerm(value: Double): DatumTerm[RNum] = numTerm(value)
-  @inline implicit def booleanAsTerm(value: Boolean): DatumTerm[RBool] = boolTerm(value)
   @inline implicit def dateAsEpochTime(value: Date): EpochTime = epochTime(value)
 }

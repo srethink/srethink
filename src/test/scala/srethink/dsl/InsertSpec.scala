@@ -1,11 +1,9 @@
-package srethink.dsl
-
-import srethink.api._
+package srethink.api
 
 class InsertSpec extends DSLSpec {
   "insert" should {
     "insert/get data" in {
-      r.table("test").insert(man).run must beTrue.await
+      persons.insert(man).run must beTrue.await
     }
   }
 }
