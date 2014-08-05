@@ -89,7 +89,7 @@ class DecoderMacroHelper[C <: Context](val c: C) {
   def decodeMethod(tpe: Type) = {
     val datum = tq"srethink.protocol.Datum"
     val ctor = tpe.declarations.collectFirst { case m: MethodSymbol if m.isPrimaryConstructor => m }.get
-    val params = ctor.typeSignatureIn(tpe).paramss.head
+    val params = ctor.typeSignatureIn(tpe).asInstanceOf[MethodTypeApi].params
     val paramValues = params.map { param =>
       val name = param.name.decoded
       val valueType = param.typeSignatureIn(tpe)
