@@ -38,16 +38,16 @@ class EncoderMacroHelper[C <: Context](val c: C) {
       case m: MethodSymbol if m.isCaseAccessor => m
     }
     val datum = q"srethink.api.RDatum"
-    val pairs = tree.foldLeft(q"scala.collection.immutable.Seq[(String, RDatum)]()") {
+    val pairs = tree.foldLeft(q"scala.collection.mutable.ArrayBuffer[(String, RDatum)]()") {
       case (pairsTree, accessorTree) =>
-        val valueType = accessorTree.returnType
+        val NullaryMethodType(valueType) = accessorTree.typeSignatureIn(tpe)
         val encoder = inferEncoder(valueType, tpe)
         if(encoder == EmptyTree) {
           c.abort(c.enclosingPosition, s"No implicit encoder for ${valueType}")
         }
         val name = accessorTree.name.decoded
         val value = q"t.$accessorTree"
-        q"$pairsTree :+ $name -> $encoder.encode($value)"
+        q"$pairsTree :+ ($name -> $encoder.encode($value))"
     }
     val encodedDatum = q"new RObject($pairs)"
     q"def encode(t: $tpe) = $encodedDatum"
@@ -87,22 +87,21 @@ class DecoderMacroHelper[C <: Context](val c: C) {
   }
 
   def decodeMethod(tpe: Type) = {
-    val companion = tpe.typeSymbol.companionSymbol
     val datum = tq"srethink.protocol.Datum"
     val ctor = tpe.declarations.collectFirst { case m: MethodSymbol if m.isPrimaryConstructor => m }.get
-    val params = ctor.paramss.head
+    val params = ctor.typeSignatureIn(tpe).asInstanceOf[MethodTypeApi].params
     val paramValues = params.map { param =>
       val name = param.name.decoded
-      val valueType = param.typeSignature
+      val valueType = param.typeSignatureIn(tpe)
       val valueTypeName = valueType.toString
       val decoder = inferDecoder(valueType, tpe)
       if(decoder == EmptyTree) {
-        c.abort(c.enclosingPosition, s"No implicit encoder for ${name}")
+        c.abort(c.enclosingPosition, s"No implicit decoder for ${name} --> ${valueTypeName}")
       }
       val newCodecException = q"throw new CodecException($name, $valueTypeName, pairMap.get($name) )"
       q"$decoder.decode(pairMap.get($name)).getOrElse($newCodecException)"
     }
-    val decodedValue = q"Some($companion(..$paramValues))"
+    val decodedValue = q"Some(new $tpe(..$paramValues))"
     q"""
        def decode(t: Option[$datum]) = {
          t.flatMap { d =>
