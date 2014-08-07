@@ -7,7 +7,6 @@ Srethink -- A rethinkdb driver for scala
 
 Features
 --------
-********
 
 +  Netty based network IO
 +  Asynchronously, future based API
@@ -17,12 +16,10 @@ Features
 
 Usage
 -----
-*****
 
 #### Requirements ####
 Scala 2.10/2.11
 Rethinkdb protocol V2/V3
-************************
 
 #### Builds From Source ####
 > Current no binary release avaliable, you had to build it by yourself
@@ -30,18 +27,18 @@ Rethinkdb protocol V2/V3
  + install `sbt`
  + clone the repo `git clone https://github.com/srethink/srethink.git`
  + run `sbt +publishLocal`
-**********************************************************************
 
 #### Add dependency ####
 > build.sbt
 ```scala
 "org.srethink" %% "srethink" % "0.0.1-SNAPSHOT",
 ```
-***********************************************
 
 #### Perform queries ####
 
-Basic pattern: DSL => ASD =`encoder`=> Query => Query Executor => Response =`decoder`=> Scala object
+Basic pattern:
+
+> DSL => ASD =`encoder`=> Query => Query Executor => Response =`decoder`=> Scala object
 
 > Set up query executor
 
