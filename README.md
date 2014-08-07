@@ -19,6 +19,7 @@ Usage
 
 #### Requirements ####
 Scala 2.10/2.11
+
 Rethinkdb protocol V2/V3
 
 #### Builds From Source ####
@@ -30,6 +31,7 @@ Rethinkdb protocol V2/V3
 
 #### Add dependency ####
 > build.sbt
+
 ```scala
 "org.srethink" %% "srethink" % "0.0.1-SNAPSHOT",
 ```
@@ -38,7 +40,7 @@ Rethinkdb protocol V2/V3
 
 Basic pattern:
 
-> DSL => ASD =`encoder`=> Query => Query Executor => Response =`decoder`=> Scala object
+`DSL => ASD =`encoder`=> Query => Query Executor => Response =`decoder`=> Scala object`
 
 > Set up query executor
 
