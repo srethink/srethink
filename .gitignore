@@ -3,3 +3,6 @@ project/project
 project/target
 .ensime*
 target/*
+.classpath
+.settings
+.project

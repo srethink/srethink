@@ -2,19 +2,26 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.1"
 
 scalaVersion := "2.11.2"
 
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+
 libraryDependencies <<= scalaVersion{ scalaVersion =>
   val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
+  val playV = "2.3.3"
   val shared = Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion,
-    "io.netty" % "netty" % "3.9.0.Final",
-    "net.sandrogrzicic" %% "scalabuff-runtime" % "1.3.8",
-    "org.specs2" %% "specs2" % "2.3.13" % "test")
+    "org.scala-lang"    % "scala-reflect" % scalaVersion,
+    "io.netty"          % "netty"         % "3.9.2.Final",
+    "com.typesafe.play" %% "play-json"    % playV % "provided",
+    "com.typesafe.play" %% "play"         % playV % "provided",
+    "org.slf4j"         % "slf4j-api"     % "1.7.7",
+    "org.specs2"        %% "specs2"       % "2.3.13" % "test",
+    "org.slf4j"         % "slf4j-simple"  % "1.7.7" % "test"
+  )
   majorV match {
     case (2, 10) =>
       shared ++ Seq(
