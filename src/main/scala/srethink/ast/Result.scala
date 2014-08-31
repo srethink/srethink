@@ -14,9 +14,15 @@ case class InsertResult(
 
 case class CreateResult(created: Int)
 case class DropResult(dropped: Int)
+case class DeleteResult(
+  deleted: Int,
+  skipped: Int,
+  errors: Int,
+  first_error: Option[String])
 
 trait ResultDecoders { this: srethink.json.JsonDef =>
   implicit val insertRJsDecoder: JsDecoder[InsertResult]
   implicit val createRJsDecoder: JsDecoder[CreateResult]
   implicit val dropRJsDecoder: JsDecoder[DropResult]
+  implicit val deleteRJsDecoder: JsDecoder[DeleteResult]
 }

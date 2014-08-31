@@ -1,5 +1,6 @@
 package srethink.ast.ops
 
+import scala.concurrent.Future
 import srethink.json._
 import srethink.net._
 import srethink.ast._
@@ -35,8 +36,13 @@ trait ROptions extends JsonDef {
     trait RInsertOption extends RethinkOption
     trait RTableOption extends RethinkOption
     trait RTableCreateOption extends RethinkOption
+    trait RDeleteOption extends RethinkOption
+    trait RGetAllOption extends RethinkOption
 
-    val durability = new ROption[String]("durability") with RInsertOption with RTableOption {
+    val durability = new ROption[String]("durability")
+        with RInsertOption
+        with RTableOption
+        with RDeleteOption{
       def soft() = apply("soft")
       def hard() = apply("hard")
     }
@@ -49,6 +55,7 @@ trait ROptions extends JsonDef {
     val userOutdate = new ROption[Boolean]("use_outdated") with RTableOption
     val primaryKey = new ROption[String]("primary_key") with RTableCreateOption
     val datacenter = new ROption[String]("datacenter")
+    val index = new ROption[String]("index")
   }
 }
 
@@ -85,12 +92,12 @@ private[ast] trait RethinkOp extends ROptions with JsonDef with Terms with Resul
     executor.start(stringify(rStartQuery(query))).map(rethinkErrorHandler)
   }
 
-  protected def sequence[A: JsDecoder](query: JsValue)(implicit executor: QueryExecutor) = {
+  protected def sequence(query: JsValue)(implicit executor: QueryExecutor) = {
     import executor.executionContext
     startQuery(query).map {
       case (token, SUCCESS_SEQUENCE, body) =>
         executor.complete(token)
-        unapplyJsArray(body).map { decode[A]}
+        unapplyJsArray(body)
       case (token, SUCCESS_PARTIAL, body) =>
         executor.stop(token, stringify(rStopQuery()))
         throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${SUCCESS_PARTIAL}")
@@ -100,14 +107,18 @@ private[ast] trait RethinkOp extends ROptions with JsonDef with Terms with Resul
     }
   }
 
-  protected def atom[A: JsDecoder](query: JsValue)(implicit executor: QueryExecutor) = {
+  protected def atom(query: JsValue)(implicit executor: QueryExecutor) = {
     import executor.executionContext
     startQuery(query).map {
       case (t, SUCCESS_ATOM, body) =>
-        val r = unapplyJsArray(body)(0)
-        decode[A](r)
+        unapplyJsArray(body)(0)
       case (t, rt, body) =>
         throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${rt}")
     }
+  }
+
+  def decodeR[T: JsDecoder](r: Future[JsValue])(implicit executor: QueryExecutor) = {
+    import executor.executionContext
+    r.map(decode[T])
   }
 }

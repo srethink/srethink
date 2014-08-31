@@ -5,10 +5,10 @@ import srethink.net._
 
 trait DBDropOp extends RethinkOp {
 
-  trait DBDrop {
+  trait DBDropDef {
     def dbDrop(db: String)(implicit executor: QueryExecutor) = {
       val term = rDBDrop(db)
-      atom[CreateResult](term)
+      decodeR[CreateResult](atom(term))
     }
   }
 }

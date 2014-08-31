@@ -68,4 +68,12 @@ private[ast] trait Terms { this: JsonDef =>
   def rDBDrop(db: String) = {
     rTerm(DB_DROP_VALUE, Seq(db))
   }
+
+  def rDelete(selection: JsValue, options: JsObject) = {
+    rTerm(DELETE_VALUE, Seq(selection), options)
+  }
+
+  def rGetAll(table: JsValue,keys: Seq[JsValue], options: JsObject) = {
+    rTerm(GET_ALL_VALUE, table +: keys, options )
+  }
 }

@@ -33,4 +33,5 @@ trait PlayJsonDef extends JsonDef with ResultDecoders with PlayRethinkFormats {
   val insertRJsDecoder = Json.reads[InsertResult]
   val createRJsDecoder = Json.reads[CreateResult]
   val dropRJsDecoder = Json.reads[DropResult]
+  val deleteRJsDecoder = Json.reads[DeleteResult]
 }

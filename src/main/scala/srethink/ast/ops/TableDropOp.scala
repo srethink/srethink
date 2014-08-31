@@ -5,10 +5,10 @@ import srethink.net._
 
 trait TableDropOp extends RethinkOp {
 
-  trait TableDrop {
+  trait TableDropDef {
     def tableDrop(table: String, db: String)(implicit executor: QueryExecutor) = {
       val term = rTableDrop(rDatabase(db), table)
-      atom[CreateResult](term)
+      decodeR[DropResult](atom(term))
     }
   }
 }
