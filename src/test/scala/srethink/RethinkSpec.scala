@@ -62,8 +62,11 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
 }
 
 trait PlayRethinkSpec extends WithData with PlayJsonDef with PlayRethinkFormats {
-  implicit val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
-  implicit val bookCodec = play.api.libs.json.Json.format[Book]
-  implicit val primaryKeyEncoder = eitherWrites[String, Double]
-  implicit val booksDecoder = play.api.libs.json.Reads.traversableReads[Seq, Book]
+  import scala.collection.generic._
+  implicit lazy val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
+  implicit lazy val bookCodec = play.api.libs.json.Json.format[Book]
+  implicit lazy val primaryKeyEncoder = eitherWrites[String, Double]
+  implicit lazy val booksDecoder = play.api.libs.json.Reads.traversableReads[Seq, Book](
+    implicitly[CanBuildFrom[Seq[_], Book, Seq[Book]]], bookCodec
+  )
 }
