@@ -9,22 +9,16 @@ import srethink.protocol._
 
 trait RethinkConfig {
   val hostname: String
-  val version: VersionDummy.Version.EnumVal
   val authenticationKey: String
   val executionContext: ExecutionContext
-  def magic = version.id
-  def protocol = version match {
-    case VersionDummy.Version.V0_3 =>
-      Some(VersionDummy.Protocol.PROTOBUF_VALUE)
-    case _ => None
-  }
+  val magic: Int
+  val poolSize: Int
 }
 
 object RethinkConfig {
   def nettyConfig(
     hostname: String = "127.0.0.1",
     port: Int = 28015,
-    version: VersionDummy.Version.EnumVal = VersionDummy.Version.V0_3,
     authenticationKey: String = "",
     bossExecutor: Executor = Executors.newCachedThreadPool(),
     workerExecutor: Executor = Executors.newCachedThreadPool()
@@ -32,22 +26,20 @@ object RethinkConfig {
     NettyRethinkConfig(
       hostname = hostname,
       port = port,
-      version = version,
+      magic = Protocol.V0_3_VALUE,
+      poolSize = 1,
       authenticationKey = authenticationKey,
       executionContext = ExecutionContext.fromExecutor(workerExecutor),
       channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor)
     )
   }
-
-  val V1 = VersionDummy.Version.V0_1
-  val V2 = VersionDummy.Version.V0_2
-  val V3 = VersionDummy.Version.V0_3
 }
 
 case class NettyRethinkConfig(
   hostname: String,
   port: Int,
-  version: VersionDummy.Version.EnumVal,
+  magic: Int ,
+  poolSize: Int,
   authenticationKey: String,
   executionContext: ExecutionContext,
   channelFactory: ChannelFactory
