@@ -37,8 +37,8 @@ private[ast] trait Terms { this: JsonDef =>
   }
 
   def rFunc(argc: Int, body: JsValue) = {
-    val vars = (1 to argc).map(rVar)
-    rTerm(FUNC_VALUE, Seq(rArray(vars), body))
+    val vars = rArray((1 to argc).map(jsNumber(_)))
+    rTerm(FUNC_VALUE, Seq(vars, body))
   }
 
   def rInsert(table: JsValue, values: Seq[JsValue], options: JsObject) = {
@@ -76,4 +76,17 @@ private[ast] trait Terms { this: JsonDef =>
   def rGetAll(table: JsValue,keys: Seq[JsValue], options: JsObject) = {
     rTerm(GET_ALL_VALUE, table +: keys, options )
   }
+
+  def rGetField(obj: JsValue, field: String) = {
+    rTerm(GET_FIELD_VALUE, Seq(obj, field))
+  }
+
+  def rIndexCreate(table: JsValue, name: String, func: JsValue) = {
+    rTerm(INDEX_CREATE_VALUE, Seq(table, name, func))
+  }
+
+  def rIndexDrop(table: JsValue, name: String) = {
+    rTerm(INDEX_DROP_VALUE, Seq(table, name))
+  }
+
 }
