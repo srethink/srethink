@@ -1,7 +1,5 @@
 package srethink
 
-import play.api.rql._
-
 case class Book(
   title: String,
   author: String,

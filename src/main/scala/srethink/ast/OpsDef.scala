@@ -11,18 +11,29 @@ trait OpsDef extends Ast
     with DBDropOp
     with DeleteOp
     with GetAllOp
+    with GetOp
     with SelectionOp
     with GetFieldOp
     with IndexCreateOp with IndexDropOp {
 
   implicit class TableOpsInstance(val table: RTable)
-      extends InsertDef with DeleteDef with GetAllDef with IndexCreateDef with IndexDropDef {
+      extends InsertDef
+      with DeleteDef
+      with GetAllDef
+      with GetDef
+      with IndexCreateDef
+      with IndexDropDef {
+
     val tableTerm = rTable(table.db, table.name)
     val parent = tableTerm
   }
 
   implicit class GetAllInstance(val getAll: GetAll) extends SelectionDef {
     val parent = getAll.term
+  }
+
+  implicit class GetInstance(val get: Get) extends SelectionDef {
+    val parent = get.term
   }
 
   implicit class ExprInstance(val expr: Expr) {

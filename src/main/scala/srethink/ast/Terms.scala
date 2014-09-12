@@ -77,6 +77,10 @@ private[ast] trait Terms { this: JsonDef =>
     rTerm(GET_ALL_VALUE, table +: keys, options )
   }
 
+  def rGet(table: JsValue,key: JsValue) = {
+    rTerm(GET_VALUE, table +: key +: Nil )
+  }
+
   def rGetField(obj: JsValue, field: String) = {
     rTerm(GET_FIELD_VALUE, Seq(obj, field))
   }
