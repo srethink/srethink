@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.1"
+version := "0.0.2"
 
 scalaVersion := "2.11.2"
 
@@ -12,10 +12,11 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 libraryDependencies <<= scalaVersion{ scalaVersion =>
   val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
-  val playV = "2.3.3"
+  val playV = "2.3.4"
   val shared = Seq(
     "org.scala-lang"    % "scala-reflect" % scalaVersion,
-    "io.netty"          % "netty"         % "3.9.2.Final",
+    "org.scala-lang"    % "scala-compiler"% scalaVersion,
+    "io.netty"          % "netty"         % "3.9.3.Final",
     "com.typesafe.play" %% "play-json"    % playV % "provided",
     "com.typesafe.play" %% "play"         % playV % "provided",
     "org.slf4j"         % "slf4j-api"     % "1.7.7",

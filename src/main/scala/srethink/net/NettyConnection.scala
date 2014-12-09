@@ -1,12 +1,7 @@
 package srethink.net
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{
-  Await,
-  Promise,
-  Future,
-  duration
-}
+import scala.concurrent.{Await, Promise, Future, duration}
 import scala.util.Failure
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer._
@@ -14,7 +9,6 @@ import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.frame._
 import org.jboss.netty.handler.codec.string.StringDecoder
 import org.slf4j.LoggerFactory
-
 import srethink.protocol.Protocol
 
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
