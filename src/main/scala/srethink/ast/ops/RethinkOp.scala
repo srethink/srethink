@@ -14,7 +14,7 @@ trait ROptions extends JsonDef {
 
     class ROption[T] private[ops](private[ops] val name: String) extends RethinkOption {
       private[ops] var value = None: Option[JsValue]
-      final def apply(v: T) = {
+      final def apply(v: T): this.type = {
         value = Some(
           v match {
             case o : Int => jsNumber(o)

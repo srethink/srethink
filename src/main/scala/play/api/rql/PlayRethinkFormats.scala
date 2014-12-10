@@ -40,7 +40,7 @@ trait PlayRethinkFormats {
   implicit val timeReads : Reads[Date] = new Reads[Date] {
     def reads(json: JS) = {
       json match {
-        case JsObject(("$rql_type$", JsString("TIME")) +: ("epoch_time", JsNumber(t)) +: tail) =>
+        case JsObject(("$reql_type$", JsString("TIME")) +: ("epoch_time", JsNumber(t)) +: tail) =>
           JsSuccess(new Date((t * 1000).toLong))
         case _ =>
           JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.rql_type to be TIME"))))
@@ -52,7 +52,7 @@ trait PlayRethinkFormats {
     def writes(date: Date) = {
       JsObject(
         Seq(
-          "$rql_type$" -> JsString("TIME"),
+          "$reql_type$" -> JsString("TIME"),
           "epoch_time" -> JsNumber(BigDecimal(date.getTime) / 1000),
           "timezone" -> JsString("+00:00")
         )

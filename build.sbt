@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 scalaVersion := "2.11.2"
 
@@ -38,7 +38,9 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-language:implicitConversions",
   "-language:dynamics",
-  "-language:higherKinds"
+  "-language:higherKinds",
+  "-language:existentials",
+  "-language:reflectiveCalls"
 )
 
 ScoverageKeys.minimumCoverage := 80
