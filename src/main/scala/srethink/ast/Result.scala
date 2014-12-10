@@ -10,7 +10,7 @@ case class InsertResult(
   deleted: Int,
   skipped: Int,
   first_error: Option[String],
-  generated_keys: Seq[Either[String, Double]])
+  generated_keys: Option[Seq[Either[String, Double]]])
 
 case class CreateResult(created: Int)
 case class DropResult(dropped: Int)
