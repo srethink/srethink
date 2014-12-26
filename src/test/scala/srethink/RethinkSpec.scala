@@ -60,7 +60,8 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
         "releaseDate" -> jsObject(
           Seq(
             "$reql_type$" -> "TIME",
-            "epoch_time" -> jsNumber((new java.util.Date).getTime / 1000.00)
+            "epoch_time" -> jsNumber((new java.util.Date).getTime / 1000.00),
+            "timezone" -> "+08:00"
           )
         )
       )
