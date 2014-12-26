@@ -25,7 +25,11 @@ private[ast] trait Terms { this: JsonDef =>
   }
 
   def rTerm(tpe: Int, args: Seq[JsValue], optargs: JsObject = EmptyOpts) = {
-    jsArray(Seq(jsNumber(tpe), args, optargs))
+    if(optargs == EmptyOpts) {
+      jsArray(Seq(jsNumber(tpe), args))
+    } else {
+      jsArray(Seq(jsNumber(tpe), args, optargs))
+    }
   }
 
   def rVar(id: Int) = {
@@ -45,8 +49,8 @@ private[ast] trait Terms { this: JsonDef =>
     rTerm(INSERT_VALUE, Seq(table, rArray(values)), options)
   }
 
-  def rTable(db: String, name: String): JsValue = {
-    rTerm(TABLE_VALUE, Seq(rDatabase(db), name))
+  def rTable(db: JsValue, name: String, options: JsObject): JsValue = {
+    rTerm(TABLE_VALUE, Seq(db, name), options)
   }
 
   def rDatabase(name: String) = {
@@ -77,8 +81,8 @@ private[ast] trait Terms { this: JsonDef =>
     rTerm(GET_ALL_VALUE, table +: keys, options )
   }
 
-  def rGet(table: JsValue,key: JsValue) = {
-    rTerm(GET_VALUE, table +: key +: Nil )
+  def rGet(table: JsValue,key: JsValue, options: JsObject) = {
+    rTerm(GET_VALUE, table +: key +: Nil, options )
   }
 
   def rGetField(obj: JsValue, field: String) = {
@@ -93,4 +97,23 @@ private[ast] trait Terms { this: JsonDef =>
     rTerm(INDEX_DROP_VALUE, Seq(table, name))
   }
 
+  def rMap(term: JsValue, func: JsValue) = {
+    rTerm(MAP_VALUE, Seq(term, func))
+  }
+
+  def rAdd(left: JsValue, right: JsValue) = {
+    rTerm(ADD_VALUE, Seq(left, right))
+  }
+
+  def rSub(left:JsValue, right: JsValue) = {
+    rTerm(SUB_VALUE, Seq(left, right))
+  }
+
+  def rMul(left: JsValue, right: JsValue) = {
+    rTerm(MUL_VALUE, Seq(left, right))
+  }
+
+  def rDiv(left: JsValue, right: JsValue) = {
+    rTerm(DIV_VALUE, Seq(left, right))
+  }
 }

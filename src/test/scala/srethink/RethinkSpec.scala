@@ -12,6 +12,21 @@ trait RethinkSpec extends Specification with RQL {
   implicit val executor: QueryExecutor
 }
 
+trait RethinkOperatorSpec extends RethinkSpec with WithData {
+  def testOp(name: String)(f: Var => Expr)(fr: Book => JsValue) = {
+    s"perform $name" in {
+      val b = book(1)
+      val fut = for {
+        ir <- books.insert(Seq(b)).runAs[InsertResult]
+        qs <- books.getAll(ir.generated_keys.get).map(f).run
+      } yield {
+        exactJsArray(qs) must contain(exactly(fr(b)))
+      }
+      fut.await
+    }
+  }
+}
+
 trait TestCodec extends RethinkSpec {
   implicit val bookCodec: JsEncoder[Book] with JsDecoder[Book]
   implicit val primaryKeyEncoder: JsEncoder[Either[String, Double]]
@@ -19,8 +34,11 @@ trait TestCodec extends RethinkSpec {
 }
 trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
 
-  lazy val books = r.table("library", "book")
+  lazy val books = r.db("library").table("book")
 
+  def exactJsArray(v: JsValue) = {
+    unapplyJsArray(v.asInstanceOf[JsArray])
+  }
 
   def book(i: Int) = {
     Book(
@@ -41,7 +59,7 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
         "quantity" -> jsNumber(i),
         "releaseDate" -> jsObject(
           Seq(
-            "$rql_type$" -> "TIME",
+            "$reql_type$" -> "TIME",
             "epoch_time" -> jsNumber((new java.util.Date).getTime / 1000.00)
           )
         )
@@ -52,9 +70,9 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
   def before() = {
     import scala.concurrent.{Await, duration}
     val fut = for {
-      _ <- r.dbCreate("library").recover{case e => }
-      _ <- r.tableCreate("library", "book").recover{case e => }
-      _ <- books.delete()
+      _ <- r.dbCreate("library").runAs[CreateResult].recover{case e => }
+      _ <- r.db("library").tableCreate("book").runAs[CreateResult].recover{case e => }
+      _ <- books.delete().runAs[DropResult]
     } yield true
     Await.ready(fut, duration.Duration.Inf)
   }
@@ -66,7 +84,5 @@ trait PlayRethinkSpec extends WithData with PlayJsonDef with PlayRethinkFormats 
   implicit lazy val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
   implicit lazy val bookCodec = play.api.libs.json.Json.format[Book]
   implicit lazy val primaryKeyEncoder = eitherWrites[String, Double]
-  implicit lazy val booksDecoder = play.api.libs.json.Reads.traversableReads[Seq, Book](
-    implicitly[CanBuildFrom[Seq[_], Book, Seq[Book]]], bookCodec
-  )
+  implicit lazy val booksDecoder = implicitly[Format[Seq[Book]]]
 }

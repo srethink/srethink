@@ -4,6 +4,7 @@ import play.api.libs.json
 import play.api.libs.json.{Reads, Writes, Json}
 import srethink.json._
 import srethink.ast._
+import srethink._
 
 trait PlayJsonDef extends JsonDef with ResultDecoders with PlayRethinkFormats {
   type JsValue = json.JsValue

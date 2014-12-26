@@ -5,9 +5,9 @@ trait IndexCreateDropSpec extends RethinkSpec with WithData{
     "create index" in {
       val fut = for{
         //drop first
-        _ <- books.indexDrop("author").recover{case e => true}
-        cr <- books.indexCreate("author")(_.author)
-        dr <- books.indexDrop("author")
+        _ <- books.indexDrop("author").runAs[CreateResult].recover{case e => true}
+        cr <- books.indexCreate("author")(_.author).runAs[CreateResult]
+        dr <- books.indexDrop("author").runAs[DropResult]
       } yield {
         cr.created must be_==(1)
         dr.dropped must be_==(1)

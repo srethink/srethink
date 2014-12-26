@@ -2,6 +2,5 @@ package srethink.ast
 
 import srethink.json._
 
-trait RQL extends OpsDef {
-
+trait RQL  extends AstDef {
 }
