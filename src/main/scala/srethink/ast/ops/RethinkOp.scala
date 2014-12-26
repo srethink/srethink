@@ -5,61 +5,8 @@ import srethink.json._
 import srethink.net._
 import srethink.ast._
 
-trait ROptions extends JsonDef {
-  object o {
-    trait RethinkOption {
-      private[ops] val name: String
-      private[ops] var value: Option[JsValue]
-    }
 
-    class ROption[T] private[ops](private[ops] val name: String) extends RethinkOption {
-      private[ops] var value = None: Option[JsValue]
-      final def apply(v: T): this.type = {
-        value = Some(
-          v match {
-            case o : Int => jsNumber(o)
-            case o : Boolean => jsBool(o)
-            case o : String => jsString(o)
-          }
-        )
-        this
-      }
-    }
-
-    private[ops] def options(options: Seq[RethinkOption]) = {
-      val opts = options.collect {
-        case k: ROption[_] if k.value.isDefined => k.name -> k.value.get
-      }
-      jsObject(opts)
-    }
-
-    trait RInsertOption extends RethinkOption
-    trait RTableOption extends RethinkOption
-    trait RTableCreateOption extends RethinkOption
-    trait RDeleteOption extends RethinkOption
-    trait RGetAllOption extends RethinkOption
-
-    val durability = new ROption[String]("durability")
-        with RInsertOption
-        with RTableOption
-        with RDeleteOption{
-      def soft() = apply("soft")
-      def hard() = apply("hard")
-    }
-    val returnVals = new ROption[Boolean]("return_changes") with RInsertOption
-    val conflict = new ROption[String]("conflict") with RInsertOption {
-      def overwrites() = apply("overwrites")
-      def update() = apply("updates")
-      def error() = apply("error")
-    }
-    val userOutdate = new ROption[Boolean]("use_outdated") with RTableOption
-    val primaryKey = new ROption[String]("primary_key") with RTableCreateOption
-    val datacenter = new ROption[String]("datacenter")
-    val index = new ROption[String]("index")
-  }
-}
-
-private[ast] trait RethinkOp extends ROptions with JsonDef with Terms with ResultDecoders {
+private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
 
   import srethink.protocol.ResponseConstant._
   private val SUCCESS_ATOM = jsNumber(SUCCESS_ATOM_VALUE)
