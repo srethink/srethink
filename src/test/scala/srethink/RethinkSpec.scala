@@ -85,5 +85,6 @@ trait PlayRethinkSpec extends WithData with PlayJsonDef with PlayRethinkFormats 
   implicit lazy val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
   implicit lazy val bookCodec = play.api.libs.json.Json.format[Book]
   implicit lazy val primaryKeyEncoder = eitherWrites[String, Double]
-  implicit lazy val booksDecoder = implicitly[Format[Seq[Book]]]
+  implicit lazy val booksDecoder = play.api.libs.json.Reads.traversableReads[Seq, Book](
+    implicitly[CanBuildFrom[Seq[_], Book, Seq[Book]]], bookCodec)
 }
