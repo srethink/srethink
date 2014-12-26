@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait GetSpec extends RethinkSpec with WithData {
   "get_all api" should {
@@ -14,4 +16,4 @@ trait GetSpec extends RethinkSpec with WithData {
   }
 }
 
-class PlayGetSpec extends GetAllSpec with PlayRethinkSpec
+class PlayGetSpec extends GetSpec with PlayRethinkSpec

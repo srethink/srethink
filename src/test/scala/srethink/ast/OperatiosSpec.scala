@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait OperatorsSpec extends RethinkOperatorSpec {
   "rql" should {

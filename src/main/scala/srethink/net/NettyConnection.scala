@@ -31,10 +31,16 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def isConnected = channel.map(_.isOpen).getOrElse(false)
 
   def query(query: Query): Future[Response] = {
-    logger.debug("sending query with  {}", query)
+    logger.debug("sending query {}", query)
     val newPromise = Promise[Response]()
     def p = responseMap.putIfAbsent(query.token, newPromise).getOrElse {
-      channel.get.write(query)
+      channel.get.write(query).addListener(new ChannelFutureListener {
+        def operationComplete(f: ChannelFuture) {
+          if(!f.isSuccess()) {
+            newPromise.complete(Failure(f.getCause()))
+          }
+        }
+      })
       newPromise
     }
     for {
@@ -78,7 +84,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       e.getCause() match {
         case e: java.net.ConnectException =>
           handshake.complete(new Failure(e))
-        case _ => throw e.getCause()
+        case _ =>
       }
     }
 

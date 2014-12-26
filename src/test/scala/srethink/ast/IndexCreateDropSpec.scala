@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait IndexCreateDropSpec extends RethinkSpec with WithData{
   "index create api" should {

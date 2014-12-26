@@ -16,7 +16,6 @@ trait QueryExecutor {
   final def start(query: String) = {
     val c = factory.acquire()
     val t = token.incrementAndGet()
-    tokenRegistry.put(t, c)
     c.query(Query(t, query))
   }
 
@@ -28,6 +27,9 @@ trait QueryExecutor {
     tokenRegistry.get(token).foreach { c =>
       c.query(Query(token, query))
     }
+  }
+
+  final def cursor(query: String) = {
   }
 
   final def stop(token: Long, query: String) = {

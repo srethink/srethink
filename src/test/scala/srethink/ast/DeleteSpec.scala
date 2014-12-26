@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait DeleteSpec extends RethinkSpec with WithData {
   "delete api" should {

@@ -32,6 +32,7 @@ trait TestCodec extends RethinkSpec {
   implicit val primaryKeyEncoder: JsEncoder[Either[String, Double]]
   implicit val booksDecoder: JsDecoder[Seq[Book]]
 }
+
 trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
 
   lazy val books = r.db("library").table("book")

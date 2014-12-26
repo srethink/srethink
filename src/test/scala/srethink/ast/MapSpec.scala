@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait MapSpec extends RethinkSpec with WithData {
   "map" should {

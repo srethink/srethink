@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait InsertSpec extends RethinkSpec with WithData {
   "insert api" should {

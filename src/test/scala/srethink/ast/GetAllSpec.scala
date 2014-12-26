@@ -1,4 +1,6 @@
-package srethink
+package srethink.ast
+
+import srethink._
 
 trait GetAllSpec extends RethinkSpec with WithData {
   "get_all api" should {
