@@ -1,12 +1,12 @@
-package srethink.ast.ops
+package srethink.ast
 
 import scala.concurrent.Future
 import srethink.json._
 import srethink.net._
 import srethink.ast._
+import srethink._
 
-
-private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
+private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   import srethink.protocol.ResponseConstant._
   private val SUCCESS_ATOM = jsNumber(SUCCESS_ATOM_VALUE)
@@ -18,13 +18,13 @@ private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
   private val COMPILE_ERROR = jsNumber(COMPILE_ERROR_VALUE)
   private val RUNTIME_ERROR = jsNumber(RUNTIME_ERROR_VALUE)
 
-  private val rethinkErrorHandler: (Response => (Long, JsValue, JsArray)) = { r =>
-    val fields = unapplyJsObject(parse(r.body).asInstanceOf[JsObject])
+  private val rethinkErrorHandler: (Response => (Long, J, J)) = { r =>
+    val fields = unapplyJsObject(parse(r.body))
     val Some(rt) = fields.collectFirst {
       case (n, v) if n == "t" => v
     }
     val Some(rr) = fields.collectFirst {
-      case (n, v) if n == "r" => v.asInstanceOf[JsArray]
+      case (n, v) if n == "r" => v
     }
     rt match {
       case CLIENT_ERROR | COMPILE_ERROR | RUNTIME_ERROR =>
@@ -34,12 +34,12 @@ private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
     }
   }
 
-  private def startQuery(query: JsValue)(implicit executor: QueryExecutor) = {
+  private def startQuery(query: J)(implicit executor: QueryExecutor) = {
     import executor.executionContext
     executor.start(stringify(rStartQuery(query))).map(rethinkErrorHandler)
   }
 
-  protected def sequence(query: JsValue)(implicit executor: QueryExecutor) = {
+  protected def sequence(query: J)(implicit executor: QueryExecutor) = {
     import executor.executionContext
     startQuery(query).map {
       case (token, SUCCESS_SEQUENCE, body) =>
@@ -54,7 +54,7 @@ private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
     }
   }
 
-  protected def atom(query: JsValue)(implicit executor: QueryExecutor) = {
+  protected def atom(query: J)(implicit executor: QueryExecutor) = {
     import executor.executionContext
     startQuery(query).map {
       case (t, SUCCESS_ATOM, body) =>
@@ -64,7 +64,7 @@ private[ast] trait RethinkOp extends  JsonDef with Terms with ResultDecoders {
     }
   }
 
-  def decodeR[T: JsDecoder](r: Future[JsValue])(implicit executor: QueryExecutor) = {
+  def decodeR[T: F](r: Future[J])(implicit executor: QueryExecutor) = {
     import executor.executionContext
     r.map(decode[T])
   }

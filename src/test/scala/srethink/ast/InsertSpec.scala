@@ -1,8 +1,9 @@
 package srethink.ast
 
+import play.api.rql._
 import srethink._
 
-trait InsertSpec extends RethinkSpec with WithData {
+class InsertSpec extends RethinkSpec with WithData {
   "insert api" should {
     "insert scala values" in {
       val items = (1 to 1).map(book)
@@ -16,5 +17,3 @@ trait InsertSpec extends RethinkSpec with WithData {
     }
   }
 }
-
-class PlayInsertSpec extends InsertSpec with PlayRethinkSpec

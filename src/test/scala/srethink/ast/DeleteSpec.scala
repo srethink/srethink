@@ -1,8 +1,9 @@
 package srethink.ast
 
+import play.api.rql._
 import srethink._
 
-trait DeleteSpec extends RethinkSpec with WithData {
+class DeleteSpec extends RethinkSpec with WithData {
   "delete api" should {
     "delete all elements of table" in {
       val items = (1 to 1).map(book)
@@ -13,5 +14,3 @@ trait DeleteSpec extends RethinkSpec with WithData {
     }
   }
 }
-
-class PlayDeleteSpec extends DeleteSpec with PlayRethinkSpec

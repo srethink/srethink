@@ -1,8 +1,9 @@
 package srethink.ast
 
+import play.api.rql._
 import srethink._
 
-trait IndexCreateDropSpec extends RethinkSpec with WithData{
+class IndexCreateDropSpec extends RethinkSpec with WithData{
   "index create api" should {
     "create index" in {
       val fut = for{
@@ -18,5 +19,3 @@ trait IndexCreateDropSpec extends RethinkSpec with WithData{
     }
   }
 }
-
-class PlayIndexCreateDropSpec extends IndexCreateDropSpec with PlayRethinkSpec

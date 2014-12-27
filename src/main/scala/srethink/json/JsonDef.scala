@@ -1,34 +1,33 @@
 package srethink.json
 
+import java.util.Date
+
 /**
  * This trait aims to support multi json serialize library
  */
-trait JsonTypes {
-  type JsValue
-  type JsBool <: JsValue
-  type JsNumber <: JsValue
-  type JsString <: JsValue
-  type JsArray <: JsValue
-  type JsObject <: JsValue
-  type JsEncoder[T]
-  type JsDecoder[T]
+trait JsonDef[J, F[_]] {
+
+  implicit val booleanF: F[Boolean]
+  implicit val intF: F[Int]
+  implicit val longF: F[Long]
+  implicit val floatF: F[Float]
+  implicit val doubleF: F[Double]
+  implicit val stringF: F[String]
+  implicit val dateF: F[Date]
+
+  implicit def jsNumber(i: Long): J = encode(i)
+  implicit def jsNumber(d: Double): J = encode(d)
+  implicit def jsBool(b: Boolean): J = encode(b)
+  implicit def jsString(s: String): J = encode(s)
+
+  def encode[T: F](t: T): J
+  def decode[T: F](json: J): T
+
+  def parse(s: String): J
+  def stringify(j: J): String
+
+  implicit def jsArray(seq: Seq[J]): J
+  implicit def jsObject(seq: Seq[(String, J)]): J
+  def unapplyJsArray(j: J): Seq[J]
+  def unapplyJsObject(j: J): Seq[(String, J)]
 }
-
-trait JsonMethods { this: JsonTypes =>
-  implicit def jsBool(value: Boolean): JsBool
-  implicit def jsNumber(value: Double): JsNumber
-  implicit def jsNumber(value: Long): JsNumber
-  implicit def jsString(value: String): JsString
-  implicit def jsArray(item: Seq[JsValue]): JsArray
-  implicit def jsObject(fields: Seq[(String, JsValue)]): JsObject
-
-  def unapplyJsObject(obj: JsObject): Seq[(String, JsValue)]
-  def unapplyJsArray(arr: JsArray): Seq[JsValue]
-
-  def stringify(json: JsValue): String
-  def parse(json: String): JsValue
-  def encode[T: JsEncoder](t: T): JsValue
-  def decode[T: JsDecoder](js: JsValue): T
-}
-
-trait JsonDef extends JsonTypes with JsonMethods

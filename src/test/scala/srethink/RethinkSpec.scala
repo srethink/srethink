@@ -2,44 +2,34 @@ package srethink
 
 import org.specs2.mutable.Specification
 import org.specs2.specification._
-import play.api.rql.{PlayRethinkFormats, PlayJsonDef}
-import srethink.ast._
-import srethink.net._
+import play.api.rql._
 import play.api.libs.json._
+import srethink.net._
 
-trait RethinkSpec extends Specification with RQL {
+trait RethinkSpec extends Specification {
   sequential
-  implicit val executor: QueryExecutor
+  implicit val executor: QueryExecutor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
 }
 
-trait RethinkOperatorSpec extends RethinkSpec with WithData {
-  def testOp(name: String)(f: Var => Expr)(fr: Book => JsValue) = {
+trait RethinkOperatorSpec extends  WithData {
+  def testOp[T: Format](name: String)(f: Var => Expr)(fr: Book => T) = {
     s"perform $name" in {
       val b = book(1)
       val fut = for {
         ir <- books.insert(Seq(b)).runAs[InsertResult]
-        qs <- books.getAll(ir.generated_keys.get).map(f).run
+        qs <- books.getAll(ir.generated_keys.get).map(f).runAs[Seq[T]]
       } yield {
-        exactJsArray(qs) must contain(exactly(fr(b)))
+        qs must contain(exactly(fr(b)))
       }
       fut.await
     }
   }
 }
 
-trait TestCodec extends RethinkSpec {
-  implicit val bookCodec: JsEncoder[Book] with JsDecoder[Book]
-  implicit val primaryKeyEncoder: JsEncoder[Either[String, Double]]
-  implicit val booksDecoder: JsDecoder[Seq[Book]]
-}
-
-trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
+trait WithData extends RethinkSpec with BeforeExample {
 
   lazy val books = r.db("library").table("book")
-
-  def exactJsArray(v: JsValue) = {
-    unapplyJsArray(v.asInstanceOf[JsArray])
-  }
+  lazy implicit val bookCodec: Format[Book] = Json.format[Book]
 
   def book(i: Int) = {
     Book(
@@ -60,9 +50,9 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
         "quantity" -> jsNumber(i),
         "releaseDate" -> jsObject(
           Seq(
-            "$reql_type$" -> "TIME",
+            "$reql_type$" -> jsString("TIME"),
             "epoch_time" -> jsNumber((new java.util.Date).getTime / 1000.00),
-            "timezone" -> "+08:00"
+            "timezone" -> jsString("+08:00")
           )
         )
       )
@@ -78,14 +68,4 @@ trait WithData extends RethinkSpec with RQL with BeforeExample with TestCodec {
     } yield true
     Await.ready(fut, duration.Duration.Inf)
   }
-
-}
-
-trait PlayRethinkSpec extends WithData with PlayJsonDef with PlayRethinkFormats {
-  import scala.collection.generic._
-  implicit lazy val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
-  implicit lazy val bookCodec = play.api.libs.json.Json.format[Book]
-  implicit lazy val primaryKeyEncoder = eitherWrites[String, Double]
-  implicit lazy val booksDecoder = play.api.libs.json.Reads.traversableReads[Seq, Book](
-    implicitly[CanBuildFrom[Seq[_], Book, Seq[Book]]], bookCodec)
 }
