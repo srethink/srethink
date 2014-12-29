@@ -2,10 +2,10 @@ package srethink.ast
 
 import srethink.json._
 import srethink.net._
-import ops._
+import srethink._
 
 
-trait AstDef extends RethinkOp with Terms {
+trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
 
   object r {
     def db(name: String) = new Database(name)
@@ -14,39 +14,40 @@ trait AstDef extends RethinkOp with Terms {
   }
 
   trait Ast {
-    val term: JsValue
-    def runAs[T: JsDecoder](implicit executor: QueryExecutor) = {
-      decodeR[T](atom(term))
-    }
+    val term: J
 
     def run(implicit executor: QueryExecutor) = {
       atom(term)
     }
+
+    def runAs[T: F](implicit executor: QueryExecutor) = {
+      decodeR[T](run)
+    }
   }
 
-  class Var(val term: JsValue) extends Dynamic with Ast {
+  class Var(val term: J) extends Dynamic with Ast {
     def selectDynamic(field: String) = {
       new Expr(rGetField(term, field))
     }
   }
 
-  class EndAst(val term: JsValue) extends Ast
+  class EndAst(val term: J) extends Ast
 
-  class Expr(val term: JsValue) extends Ast {
+  class Expr(val term: J) extends Ast {
     def + (that: Expr) = new Expr(rAdd(term, that.term))
     def - (that: Expr) = new Expr(rSub(term, that.term))
     def * (that: Expr) = new Expr(rMul(term, that.term))
     def / (that: Expr) = new Expr(rDiv(term, that.term))
   }
 
-  class Selection[T](val term: JsValue) extends Ast{
+  class Selection[T](val term: J) extends Ast{
     def map(f: Var => Expr) = {
       val doc = rVar(1)
       val func = rFunc(1, f(new Var(doc)).term)
       new Selection(rMap(term, func))
     }
 
-    def delete(options: (String, JsValue)*) = {
+    def delete(options: (String, J)*) = {
       new EndAst(rDelete(term, jsObject(options)))
     }
   }
@@ -54,32 +55,35 @@ trait AstDef extends RethinkOp with Terms {
   class Database(dbName: String) extends Ast {
     val term = rDatabase(dbName)
 
-    def table(name: String, options: (String, JsValue)*) = new Table(term, name, options: _*)
+    def table(name: String, options: (String, J)*) = new Table(term, name, options: _*)
 
-    def tableCreate(name: String, options: (String, JsValue)*) = new EndAst(rTableCreate(term, name, jsObject(options)))
+    def tableCreate(name: String, options: (String, J)*) =
+      new EndAst(rTableCreate(term, name, jsObject(options)))
+
+    def tableDrop(name: String) = new EndAst(rTableDrop(term, name))
   }
 
   class Table(
-    db: JsValue,
+    db: J,
     name: String,
-    opt: (String, JsValue)*)
+    opt: (String, J)*)
       extends Selection(rTable(db, name, jsObject(opt))) with  Ast {
 
-    def get[K: JsEncoder](key: K, opt: (String, JsValue)*) = {
+    def get[K: F](key: K, opt: (String, J)*) = {
       new Selection(rGet(term, encode[K](key), jsObject(opt)))
     }
 
-    def getAll[K: JsEncoder](keys: Seq[K], opt: (String, JsValue)*) = {
+    def getAll[K: F](keys: Seq[K], opt: (String, J)*) = {
       val jsKeys = keys.map(encode[K])
       new Selection(rGetAll(term, jsKeys, jsObject(opt)))
     }
 
-    def insert[A: JsEncoder](docs: Seq[A], opts: (String, JsValue)*) = {
+    def insert[A: F](docs: Seq[A], opts: (String, J)*) = {
       val datas =docs.map(encode[A])
       insertJS(datas, opts: _*)
     }
 
-    def insertJS(docs: Seq[JsValue], opts: (String, JsValue)*) = {
+    def insertJS(docs: Seq[J], opts: (String, J)*) = {
       new EndAst(rInsert(term, docs, jsObject(opts)))
     }
 

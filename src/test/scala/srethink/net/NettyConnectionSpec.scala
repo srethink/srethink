@@ -1,9 +1,10 @@
 package srethink.net
 
 import org.specs2.mutable.Specification
+import play.api.rql._
 import srethink._
 
-class NettyConnectionSpec extends PlayRethinkSpec {
+class NettyConnectionSpec extends RethinkSpec {
 
   "netty connection" should {
     "close connection" in {
