@@ -1,9 +1,10 @@
-package play.api.rql
+package play.api.rethink
 
+import java.util.Date
 import play.api.libs.json._
 import play.api.libs.json.{JsValue => JS}
-import java.util.Date
 import play.api.data.validation.ValidationError
+import srethink.ast._
 
 trait PlayRethinkFormats {
 
@@ -42,8 +43,6 @@ trait PlayRethinkFormats {
       json match {
         case JsObject(("$reql_type$", JsString("TIME")) +: ("epoch_time", JsNumber(t)) +: tail) =>
           JsSuccess(new Date((t * 1000).toLong))
-        case _ =>
-          JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.rql_type to be TIME"))))
       }
     }
   }
@@ -60,4 +59,8 @@ trait PlayRethinkFormats {
     }
   }
 
+  implicit val insertRFormat = Json.format[InsertResult]
+  implicit val createRFormat = Json.format[CreateResult]
+  implicit val dropRFormat = Json.format[DropResult]
+  implicit val deleteRFormat = Json.format[DeleteResult]
 }

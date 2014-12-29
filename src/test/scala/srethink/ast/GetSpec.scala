@@ -1,8 +1,9 @@
 package srethink.ast
 
+import play.api.rql._
 import srethink._
 
-trait GetSpec extends RethinkSpec with WithData {
+class GetSpec extends RethinkSpec with WithData {
   "get_all api" should {
     "get all rows of table" in {
       val fut = for{
@@ -15,5 +16,3 @@ trait GetSpec extends RethinkSpec with WithData {
     }
   }
 }
-
-class PlayGetSpec extends GetSpec with PlayRethinkSpec

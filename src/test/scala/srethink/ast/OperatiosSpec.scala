@@ -2,7 +2,7 @@ package srethink.ast
 
 import srethink._
 
-trait OperatorsSpec extends RethinkOperatorSpec {
+class OperatorsSpec extends RethinkOperatorSpec {
   "rql" should {
     testOp("add")(_.quantity + 1)(_.quantity + 1)
     testOp("sub")(_.quantity - 1)(_.quantity - 1)
@@ -10,5 +10,3 @@ trait OperatorsSpec extends RethinkOperatorSpec {
     testOp("div")(_.quantity / 2.0)(_.quantity / 2.0)
   }
 }
-
-class PlayOperatorSpec extends OperatorsSpec with PlayRethinkSpec

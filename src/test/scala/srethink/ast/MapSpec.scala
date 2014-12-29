@@ -1,8 +1,11 @@
 package srethink.ast
 
+import play.api.libs.json._
+import play.api.rql._
 import srethink._
 
-trait MapSpec extends RethinkSpec with WithData {
+
+class MapSpec extends RethinkSpec with WithData {
   "map" should {
     "map result" in {
       val b = book(1)
@@ -11,11 +14,9 @@ trait MapSpec extends RethinkSpec with WithData {
         qs <- books.getAll(ir.generated_keys.get).map(_.quantity).run
       } yield {
         val expected: JsValue = jsNumber(b.quantity)
-        exactJsArray(qs) must contain(exactly(expected))
+        unapplyJsArray(qs) must contain(exactly(expected))
       }
       fut.await
     }
   }
 }
-
-class PlayMapSpec extends MapSpec with PlayRethinkSpec
