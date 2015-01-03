@@ -6,9 +6,13 @@ import play.api.libs.json.{Format, Json, Writes}
 import srethink.net._
 import play.api.rql._
 
+object Executors {
+  val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
+}
+
 trait RethinkSpec extends Specification {
   sequential
-  implicit val executor: QueryExecutor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
+  implicit val executor: QueryExecutor = Executors.executor
 }
 
 trait RethinkOperatorSpec extends  WithData {
