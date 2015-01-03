@@ -7,17 +7,27 @@ import srethink._
 
 trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
 
+  import Helpers._
+
   object r {
     def db(name: String) = new Database(name)
     def dbCreate(name: String) = new EndAst(rDBCreate(name))
     def dbDrop(name: String) = new EndAst(rDBDrop(name))
+    def epoch(date: java.util.Date): J = encode[java.util.Date](date)
+    def now() = epoch(new java.util.Date())
+    def epoch(time: Long): J = epoch(new java.util.Date(time))
+    def obj(fields: (String, Expr)*): J = {
+      jsObject(fields.map {
+        case (k, v) => k -> v.term
+      })
+    }
   }
 
   trait Ast {
     val term: J
 
     def run(implicit executor: QueryExecutor) = {
-      atom(term)
+      exec(term)
     }
 
     def runAs[T: F](implicit executor: QueryExecutor) = {
@@ -25,30 +35,82 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
   }
 
-  class Var(val term: J) extends Dynamic with Ast {
+  trait WithUpdate { this: Ast =>
+    def update(fields: (String, J)*) = {
+      new EndAst(rUpdate(term, jsObject(fields)))
+    }
+  }
+
+  trait ExprOps {
+    val term: J
+    def + (that: Expr) = new Expr(rAdd(term, that.term))
+    def - (that: Expr) = new Expr(rSub(term, that.term))
+    def * (that: Expr) = new Expr(rMul(term, that.term))
+    def / (that: Expr) = new Expr(rDiv(term, that.term))
+    def === (that: Expr) = new Expr(rEq(term, that.term))
+    def count() = new Expr(rCount(term))
+    def nth(i: Int) =  new Expr(rNth(term, i))
+    def max(field: String)= new Expr(rMax(term, field))
     def selectDynamic(field: String) = {
       new Expr(rGetField(term, field))
     }
   }
 
-  class EndAst(val term: J) extends Ast
-
-  class Expr(val term: J) extends Ast {
-    def + (that: Expr) = new Expr(rAdd(term, that.term))
-    def - (that: Expr) = new Expr(rSub(term, that.term))
-    def * (that: Expr) = new Expr(rMul(term, that.term))
-    def / (that: Expr) = new Expr(rDiv(term, that.term))
+  class Var(val term: J) extends Dynamic with Ast with ExprOps {
   }
 
-  class Selection[T](val term: J) extends Ast{
+  class EndAst(val term: J) extends Ast
+
+  implicit class Expr(val term: J) extends Ast with ExprOps with Dynamic{
+
+  }
+
+  class Selection(val term: J) extends Ast with WithUpdate {
     def map(f: Var => Expr) = {
       val doc = rVar(1)
       val func = rFunc(1, f(new Var(doc)).term)
       new Selection(rMap(term, func))
     }
 
+    def max(field: String)= new Selection(rMax(term, field))
+
     def delete(options: (String, J)*) = {
       new EndAst(rDelete(term, jsObject(options)))
+    }
+
+    def count() = {
+      new Selection(rCount(term))
+    }
+
+    def group(f: Var => Expr) = {
+      val field = Left(toJ(f))
+      new Selection(rGroup(term, field))
+    }
+
+    def groupByIndex(index: String) = {
+      val option: Seq[(String, J)] = Seq("index" -> index)
+      new Selection(rGroup(term, Right(option)))
+    }
+
+    def group(field: String) = {
+      new Selection(rGroup(term, Left(field)))
+    }
+
+    def ungroup() = {
+      new Selection(rUnGroup(term))
+    }
+
+    def skip(n: Long) = {
+      new Selection(rSkip(term, n))
+    }
+
+    def filter(f: Var => Expr) = {
+      val funcJ = toJ(f)
+      new Selection(rFilter(term, funcJ))
+    }
+
+    def limit(n: Int) = {
+      new Selection(rLimit(term, n))
     }
   }
 
@@ -78,6 +140,12 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       new Selection(rGetAll(term, jsKeys, jsObject(opt)))
     }
 
+    def between[K: F](lower: K, upper: K, opt: (String, J)*) = {
+      val lowerJ = encode[K](lower)
+      val upperJ = encode[K](upper)
+      new Selection(rBetween(term, lowerJ, upperJ, jsObject(opt)))
+    }
+
     def insert[A: F](docs: Seq[A], opts: (String, J)*) = {
       val datas =docs.map(encode[A])
       insertJS(datas, opts: _*)
@@ -88,10 +156,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
 
     def indexCreate(name: String)(f: Var => Expr) = {
-      val arg = rVar(1)
-      val body = f(new Var(arg))
-      val func = rFunc(1, body.term)
-      new EndAst(rIndexCreate(term, name, func))
+      new EndAst(rIndexCreate(term, name, toJ(f)))
     }
 
     def indexDrop(name: String) = {
@@ -99,7 +164,16 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
   }
 
+  implicit def booleanAsExpr(b: Boolean) = new Expr(b)
   implicit def longAsExpr(i: Long): Expr = new Expr(i)
-  implicit def stringAsExpr(i: String): Expr = new Expr(i)
-  implicit def doubleAsExpr(i: Double): Expr = new Expr(i)
+  implicit def stringAsExpr(s: String): Expr = new Expr(s)
+  implicit def doubleAsExpr(d: Double): Expr = new Expr(d)
+
+  private object Helpers {
+    def toJ(f: Var => Expr) = {
+      val arg = rVar(1)
+      val body = f(new Var(arg))
+      rFunc(1, body.term)
+    }
+  }
 }

@@ -45,11 +45,11 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(FUNC_VALUE, Seq(vars, body))
   }
 
-  def rInsert(table: J, values: Seq[J], options: J) = {
+  def rInsert(table: J, values: Seq[J], options: J = EmptyOpts) = {
     rTerm(INSERT_VALUE, Seq(table, rArray(values)), options)
   }
 
-  def rTable(db: J, name: String, options: J): J = {
+  def rTable(db: J, name: String, options: J = EmptyOpts): J = {
     rTerm(TABLE_VALUE, Seq(db, name), options)
   }
 
@@ -57,7 +57,7 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(DB_VALUE, Seq(name))
   }
 
-  def rTableCreate(database: J, name: String,  options: J) = {
+  def rTableCreate(database: J, name: String,  options: J = EmptyOpts) = {
     rTerm(TABLE_CREATE_VALUE, Seq(database, name), options)
   }
 
@@ -73,16 +73,24 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(DB_DROP_VALUE, Seq(db))
   }
 
-  def rDelete(selection: J, options: J) = {
+  def rDelete(selection: J, options: J = EmptyOpts) = {
     rTerm(DELETE_VALUE, Seq(selection), options)
   }
 
-  def rGetAll(table: J,keys: Seq[J], options: J) = {
+  def rGetAll(table: J,keys: Seq[J], options: J = EmptyOpts) = {
     rTerm(GET_ALL_VALUE, table +: keys, options )
   }
 
-  def rGet(table: J,key: J, options: J) = {
-    rTerm(GET_VALUE, table +: key +: Nil, options )
+  def rGet(table: J,key: J, options: J = EmptyOpts) = {
+    rTerm(GET_VALUE, table +: key +: Nil, options)
+  }
+
+  def rBetween(term: J, lower: J, upper: J, options: J = EmptyOpts) = {
+    rTerm(BETWEEN_VALUE, Seq(term ,lower, upper), options)
+  }
+
+  def rFilter(term: J, func: J) = {
+    rTerm(FILTER_VALUE, Seq(term, func))
   }
 
   def rGetField(obj: J, field: String) = {
@@ -115,5 +123,50 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
 
   def rDiv(left: J, right: J) = {
     rTerm(DIV_VALUE, Seq(left, right))
+  }
+
+  def rEq(left: J, right: J) = {
+    rTerm(EQ_VALUE, Seq(left, right))
+  }
+
+  def rNth(term: J, n: Int) = {
+    rTerm(NTH_VALUE, Seq(term, jsNumber(n)))
+  }
+
+  def rGroup(selection: J, fieldOrOption: Either[J, J]) = {
+    fieldOrOption match {
+      case Left(field) =>
+        rTerm(GROUP_VALUE, Seq(selection, field))
+      case Right(option) =>
+        rTerm(GROUP_VALUE, Seq(selection), option)
+    }
+  }
+
+  def rUnGroup(term: J) = {
+    rTerm(UNGROUP_VALUE, Seq(term))
+  }
+
+  def rCount(term: J) = {
+    rTerm(COUNT_VALUE, Seq(term))
+  }
+
+  def rSkip(term: J, count: Long) = {
+    rTerm(SKIP_VALUE, Seq(term, count))
+  }
+
+  def rLimit(term: J, count: Int) = {
+    rTerm(LIMIT_VALUE, Seq(term, jsNumber(count)))
+  }
+
+  def rUpdate(term: J, fields: J, options: J = EmptyOpts) = {
+    rTerm(UPDATE_VALUE, Seq(term, fields), options)
+  }
+
+  def rMax(term: J, field: String) = {
+    rTerm(MAX_VALUE, Seq(term, field))
+  }
+
+  def rMax(term: J) = {
+    rTerm(MAX_VALUE, Seq(term))
   }
 }
