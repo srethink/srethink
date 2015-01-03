@@ -5,6 +5,7 @@ import play.api.libs.json._
 import play.api.libs.json.{JsValue => JS}
 import play.api.data.validation.ValidationError
 import srethink.ast._
+import srethink.protocol.TermConstant.MAKE_ARRAY_VALUE
 
 trait PlayRethinkFormats {
 
@@ -59,8 +60,23 @@ trait PlayRethinkFormats {
     }
   }
 
-  implicit val insertRFormat = Json.format[InsertResult]
-  implicit val createRFormat = Json.format[CreateResult]
-  implicit val dropRFormat = Json.format[DropResult]
-  implicit val deleteRFormat = Json.format[DeleteResult]
+  lazy implicit val insertRFormat = Json.format[InsertResult]
+  lazy implicit val createRFormat = Json.format[CreateResult]
+  lazy implicit val dropRFormat = Json.format[DropResult]
+  lazy implicit val deleteRFormat = Json.format[DeleteResult]
+  lazy implicit val updateRFormat = Json.format[UpdateResult]
+  lazy implicit val booleanF = implicitly[Format[Boolean]]
+  lazy implicit val intF = implicitly[Format[Int]]
+  lazy implicit val longF = implicitly[Format[Long]]
+  lazy implicit val floatF = implicitly[Format[Float]]
+  lazy implicit val doubleF = implicitly[Format[Double]]
+  lazy implicit val stringF = implicitly[Format[String]]
+  lazy implicit val dateF = implicitly[Format[Date]]
+
+  implicit def traversableWrites[A: Writes] = new Writes[Traversable[A]] {
+    def writes(as: Traversable[A]) = {
+      val raw = JsArray(as.map(Json.toJson(_)).toSeq)
+      JsArray(Seq(JsNumber(MAKE_ARRAY_VALUE), raw))
+    }
+  }
 }

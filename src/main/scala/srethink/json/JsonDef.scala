@@ -1,7 +1,7 @@
 package srethink.json
 
 import java.util.Date
-
+import scala.collection.generic._
 /**
  * This trait aims to support multi json serialize library
  */
@@ -13,7 +13,7 @@ trait JsonDef[J, F[_]] {
   implicit val floatF: F[Float]
   implicit val doubleF: F[Double]
   implicit val stringF: F[String]
-
+  implicit val dateF: F[Date]
   implicit def jsNumber(i: Long): J = encode(i)
   implicit def jsNumber(d: Double): J = encode(d)
   implicit def jsBool(b: Boolean): J = encode(b)

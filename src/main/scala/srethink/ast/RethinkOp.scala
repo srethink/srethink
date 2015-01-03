@@ -39,7 +39,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     executor.start(stringify(rStartQuery(query))).map(rethinkErrorHandler)
   }
 
-  protected def sequence(query: J)(implicit executor: QueryExecutor) = {
+  protected def exec(query: J)(implicit executor: QueryExecutor): Future[J] = {
     import executor.executionContext
     startQuery(query).map {
       case (token, SUCCESS_SEQUENCE, body) =>
@@ -48,24 +48,20 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
       case (token, SUCCESS_PARTIAL, body) =>
         executor.stop(token, stringify(rStopQuery()))
         throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${SUCCESS_PARTIAL}")
-      case (t, rt, body) =>
-        throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${rt}")
-
-    }
-  }
-
-  protected def atom(query: J)(implicit executor: QueryExecutor) = {
-    import executor.executionContext
-    startQuery(query).map {
       case (t, SUCCESS_ATOM, body) =>
         unapplyJsArray(body)(0)
       case (t, rt, body) =>
         throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${rt}")
+
     }
   }
 
   def decodeR[T: F](r: Future[J])(implicit executor: QueryExecutor) = {
     import executor.executionContext
-    r.map(decode[T])
+    r.map(decode[T]).recoverWith {
+      case _ => r.flatMap { body =>
+        Future.failed(new RethinkException(s"error parsing body ${stringify(body)}"))
+      }
+    }
   }
 }

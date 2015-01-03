@@ -1,6 +1,6 @@
 package srethink.ast
 
-class RethinkException(msg: String) extends Exception
+class RethinkException(msg: String) extends Exception(msg)
 case class InsertResult(
   inserted: Int,
   replaced: Int,
@@ -17,6 +17,14 @@ case class DeleteResult(
   skipped: Int,
   errors: Int,
   first_error: Option[String])
+case class UpdateResult(
+  inserted: Int,
+  replaced: Int,
+  unchanged: Int,
+  errors: Int,
+  skipped: Int,
+  first_error: Option[String]
+)
 
 trait Models {
   type RethinkException = srethink.ast.RethinkException
@@ -24,4 +32,5 @@ trait Models {
   type CreateResult = srethink.ast.CreateResult
   type DropResult = srethink.ast.DropResult
   type DeleteResult = srethink.ast.DeleteResult
+  type UpdateResult = srethink.ast.UpdateResult
 }

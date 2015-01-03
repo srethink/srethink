@@ -21,12 +21,30 @@ trait RethinkOperatorSpec extends  WithData {
       } yield {
         qs must contain(exactly(fr(b)))
       }
-      fut.await
+      fut.andThen {
+        case scala.util.Failure(e) =>
+          println(e.getMessage)
+      }.await(10)
     }
   }
 }
 
+
 trait WithData extends RethinkSpec with BeforeExample  {
+
+  def testQuery[T: Format](seq: Book*)(q :Ast)(expectF: T => Boolean)= {
+    val fut = for {
+      ir <- books.insert(seq).runAs[InsertResult]
+      r <- q.runAs[T]
+    } yield {
+      println(stringify(encode[T](r)))
+      expectF(r)
+    }
+    fut.andThen {
+      case scala.util.Failure(e) =>
+        e.printStackTrace
+    }.await(10)
+  }
 
   lazy val books = r.db("library").table("book")
   implicit val bookCodec: Format[Book] = Json.format[Book]
