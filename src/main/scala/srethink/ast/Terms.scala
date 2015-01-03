@@ -130,7 +130,7 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
   }
 
   def rNth(term: J, n: Int) = {
-    rTerm(NTH_VALUE, Seq(term, n))
+    rTerm(NTH_VALUE, Seq(term, jsNumber(n)))
   }
 
   def rGroup(selection: J, fieldOrOption: Either[J, J]) = {
@@ -155,7 +155,7 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
   }
 
   def rLimit(term: J, count: Int) = {
-    rTerm(LIMIT_VALUE, Seq(term, count))
+    rTerm(LIMIT_VALUE, Seq(term, jsNumber(count)))
   }
 
   def rUpdate(term: J, fields: J, options: J = EmptyOpts) = {
