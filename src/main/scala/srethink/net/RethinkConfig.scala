@@ -4,7 +4,9 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import org.jboss.netty.util._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 import srethink.protocol._
 
 trait RethinkConfig {
@@ -13,6 +15,8 @@ trait RethinkConfig {
   val executionContext: ExecutionContext
   val magic: Int
   val poolSize: Int
+  val requestTimeout: FiniteDuration
+  val connectTimeout: FiniteDuration
 }
 
 object RethinkConfig {
@@ -21,7 +25,10 @@ object RethinkConfig {
     port: Int = 28015,
     authenticationKey: String = "",
     bossExecutor: Executor = Executors.newCachedThreadPool(),
-    workerExecutor: Executor = Executors.newCachedThreadPool()
+    workerExecutor: Executor = Executors.newCachedThreadPool(),
+    requestTimeout: FiniteDuration = 1.minutes,
+    connectTimeout: FiniteDuration = 3.seconds,
+    timer: RethinkTimer = DefaultRethinkTimer
   ) = {
     NettyRethinkConfig(
       hostname = hostname,
@@ -30,7 +37,10 @@ object RethinkConfig {
       poolSize = 1,
       authenticationKey = authenticationKey,
       executionContext = ExecutionContext.fromExecutor(workerExecutor),
-      channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor)
+      channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor),
+      requestTimeout = requestTimeout,
+      connectTimeout = connectTimeout,
+      timer = timer
     )
   }
 }
@@ -42,5 +52,8 @@ case class NettyRethinkConfig(
   poolSize: Int,
   authenticationKey: String,
   executionContext: ExecutionContext,
-  channelFactory: ChannelFactory
+  channelFactory: ChannelFactory,
+  requestTimeout: FiniteDuration,
+  connectTimeout: FiniteDuration,
+  timer: RethinkTimer
 ) extends RethinkConfig

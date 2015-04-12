@@ -2,30 +2,48 @@ package srethink.net
 
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.{Await, Promise, Future, duration}
+import scala.concurrent.duration._
 import scala.util.Failure
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer._
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.frame._
 import org.jboss.netty.handler.codec.string.StringDecoder
+import org.jboss.netty.util._
 import org.slf4j.LoggerFactory
 import srethink.protocol.Protocol
 
+
+class RethinkTimer(val interval: FiniteDuration) {
+  val timer = new HashedWheelTimer(interval.toMillis, java.util.concurrent.TimeUnit.MILLISECONDS)
+  def newSchedule(delay: FiniteDuration)(f: () => Unit) = {
+    timer.newTimeout(new TimerTask {
+      def run(timeout: Timeout) {
+        f()
+      }
+    }, delay.toMillis, java.util.concurrent.TimeUnit.MILLISECONDS)
+  }
+
+  def stop() = timer.stop()
+}
+
+object DefaultRethinkTimer extends RethinkTimer(1.seconds)
+
 class NettyConnection(val config: NettyRethinkConfig) extends Connection {
 
-  val logger = LoggerFactory.getLogger(classOf[Connection])
-
-  val charset = java.nio.charset.Charset.defaultCharset()
+  private val logger = LoggerFactory.getLogger(classOf[Connection])
+  private val charset = java.nio.charset.Charset.defaultCharset()
   private implicit val executionContext = config.executionContext
-
   @volatile
   private var channel = None: Option[Channel]
   private val responseMap = TrieMap[Long, Promise[Response]]()
   private val handshake = Promise[String]()
+  private val timer = config.timer
 
   def close() = channel.foreach { c =>
     c.close()
     c.getCloseFuture().awaitUninterruptibly()
+    markAllFail(new RethinkException("Connection already closed") )
   }
 
   def isConnected = channel.map(_.isOpen).getOrElse(false)
@@ -43,6 +61,11 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       })
       newPromise
     }
+    timer.newSchedule(config.requestTimeout) { () =>
+      if(!p.isCompleted) {
+        p.complete(Failure(new java.util.concurrent.TimeoutException()))
+      }
+    }
     for {
       shake <- handshake.future
       resp <- p.future
@@ -53,7 +76,14 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     logger.info("connecting to host {}", config.hostname)
     val channelFuture = bootstrap().connect(new java.net.InetSocketAddress(config.hostname, config.port))
     channel = Some(channelFuture.getChannel)
-    Await.ready(handshake.future, duration.Duration.Inf)
+    Await.ready(handshake.future, 3.seconds)
+  }
+
+  private def markAllFail(ex: Throwable) {
+    for( (k, v) <- responseMap if(!v.isCompleted)) {
+      v.complete(Failure(ex))
+    }
+    responseMap.clear()
   }
 
   private def bootstrap() = {
@@ -61,13 +91,11 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     val bufferFactory = new HeapChannelBufferFactory(java.nio.ByteOrder.LITTLE_ENDIAN)
     bootstrap.setOption("bufferFactory", bufferFactory)
     bootstrap.setOption("child.keepAlive", true)
-
+    bootstrap.setOption("connectTimeoutMillis",config.connectTimeout.toMillis)
     //Set pipeline factory
     val pipelineFactory = new ChannelPipelineFactory {
       def getPipeline() = {
-        val p = Channels.pipeline()
-        p.addLast("handler", new RethinkHandler)
-        p
+        Channels.pipeline(new RethinkHandler)
       }
     }
     bootstrap.setPipelineFactory(pipelineFactory)
@@ -81,10 +109,15 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     private val messageEncoderName = "messageEncoder"
 
     override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) = {
+      e.getCause().printStackTrace()
       e.getCause() match {
         case e: java.net.ConnectException =>
           handshake.complete(new Failure(e))
-        case _ =>
+        case ex =>
+          if(!handshake.isCompleted) {
+            handshake.complete(Failure(ex))
+          }
+          markAllFail(ex)
       }
     }
 
