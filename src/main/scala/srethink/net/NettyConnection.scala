@@ -3,7 +3,7 @@ package srethink.net
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.{Await, Promise, Future, duration}
 import scala.concurrent.duration._
-import scala.util.Failure
+import scala.util._
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer._
 import org.jboss.netty.channel._
@@ -43,7 +43,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def close() = channel.foreach { c =>
     c.close()
     c.getCloseFuture().awaitUninterruptibly()
-    markAllFail(new RethinkException("Connection already closed") )
+    markAllFail(new RethinkException("Connection already closed"))
   }
 
   def isConnected = channel.map(_.isOpen).getOrElse(false)
@@ -55,20 +55,20 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       channel.get.write(query).addListener(new ChannelFutureListener {
         def operationComplete(f: ChannelFuture) {
           if(!f.isSuccess()) {
-            newPromise.complete(Failure(f.getCause()))
+            newPromise.tryComplete(Failure(f.getCause()))
           }
         }
       })
       newPromise
     }
-    timer.newSchedule(config.requestTimeout) { () =>
+    val timeout = timer.newSchedule(config.requestTimeout) { () =>
       if(!p.isCompleted) {
-        p.complete(Failure(new java.util.concurrent.TimeoutException()))
+        p.tryComplete(Failure(new java.util.concurrent.TimeoutException()))
       }
     }
     for {
       shake <- handshake.future
-      resp <- p.future
+      resp <- p.future.andThen{ case _ => timeout.cancel() }
     } yield resp
   }
 
@@ -80,10 +80,12 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   }
 
   private def markAllFail(ex: Throwable) {
-    for( (k, v) <- responseMap if(!v.isCompleted)) {
-      v.complete(Failure(ex))
+    logger.error("Error caught, set all futures to fail", ex)
+    val keys = for( (k, v) <- responseMap if(!v.isCompleted)) yield {
+      v.tryComplete(Failure(ex))
+      k
     }
-    responseMap.clear()
+    responseMap --= (keys)
   }
 
   private def bootstrap() = {
@@ -112,11 +114,9 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       e.getCause().printStackTrace()
       e.getCause() match {
         case e: java.net.ConnectException =>
-          handshake.complete(new Failure(e))
+          handshake.tryComplete(new Failure(e))
         case ex =>
-          if(!handshake.isCompleted) {
-            handshake.complete(Failure(ex))
-          }
+          handshake.tryComplete(Failure(ex))
           markAllFail(ex)
       }
     }
@@ -135,7 +135,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
         case handshakeResult: String =>
           handshake.failure(new ConnectionError(handshakeResult.toString))
         case response: Response =>
-          responseMap(response.token).success(response)
+          responseMap.get(response.token).foreach(_.tryComplete(Success(response)))
           responseMap.remove(response.token)
           logger.debug("response return for {}", response)
       }
