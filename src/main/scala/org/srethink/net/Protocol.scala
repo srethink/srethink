@@ -1,4 +1,4 @@
-package srethink.protocol
+package org.srethink.net
 
 object Protocol {
   val V0_1_VALUE = 1063369270
