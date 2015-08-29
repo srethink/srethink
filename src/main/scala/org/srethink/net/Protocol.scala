@@ -4,8 +4,9 @@ object Protocol {
   val V0_1_VALUE = 1063369270
   val V0_2_VALUE = 1915781601
   val V0_3_VALUE = 1601562686
+  val V0_4_VALUE = 0x400c2d20
   val PROTOBUF_VALUE = 656407617
-  val JSON_VALUE = 2120839367
+  val JSON_VALUE = 0x7e6970c7
 }
 object QueryConstant {
   val START_VALUE = 1

@@ -2,39 +2,37 @@ package org.srethink.net
 
 import io.netty.bootstrap._
 import io.netty.channel._
+import io.netty.channel.nio._
+import io.netty.channel.socket.nio._
+import java.net._
+import java.nio.charset.Charset
 import java.util.concurrent.atomic._
-import org.srethink.core._
 import org.srethink.net.ChannelFutures._
-import scala.concurrent.{Future, Promise, ExecutionContext}
+import org.slf4j._
 import scala.collection.concurrent.TrieMap
+import scala.concurrent.{Future, Promise, ExecutionContext}
 import scala.util._
 
 case class NettyConnectionConfig(
-  host: String,
-  port: Int,
-  magic: Int,
-  protocol: Int,
-  authKey: String,
-  connectTimeoutMills: Int,
-  eventLoopGroup: EventLoopGroup,
-  channelClass: Class[Channel],
-  executionContext: ExecutionContext,
-  charset: java.nio.charset.Charset
-)
+  host: String = "127.0.0.1",
+  port: Int = 28015,
+  magic: Int = Protocol.V0_4_VALUE,
+  protocol: Int = Protocol.JSON_VALUE,
+  authKey: String = "",
+  connectTimeoutMills: Int = 3000,
+  eventLoopGroup: EventLoopGroup = new NioEventLoopGroup(),
+  channelClass: Class[_ <: Channel] = classOf[NioSocketChannel],
+  executionContext: ExecutionContext = ExecutionContext.global,
+  charset: Charset = Charset.defaultCharset())
+
 
 class NettyConnection(val config: NettyConnectionConfig) extends Connection {
 
-  private val registry = TrieMap[Long, Promise[Message]]()
   private val handshake = Promise[Boolean]
+  private val registry = new TrieMap[Long, Promise[Message]]
+  private val logger = LoggerFactory.getLogger(classOf[NettyConnection])
+  private val context = HandlerContext(config, registry, handshake, logger)
   private implicit val ec = config.executionContext
-
-  def channel = {
-    val nettyFut = bootstrap().connect()
-    for {
-      c <- asScala(nettyFut)
-      _ <- handshake.future
-    } yield c
-  }
 
   def execute(m: Message): Future[Message] = {
     channel.flatMap { c =>
@@ -44,62 +42,43 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
     }
   }
 
+  def connect() = {
+    channel.flatMap(_ => handshake.future)
+  }
+
+  def close() = {
+    channel.flatMap(_.close().asScala)
+  }
+
+  lazy val channel = {
+    val address = new InetSocketAddress(config.host, config.port)
+    bootstrap().connect(address).asScala
+  }
+
   private def bootstrap() = {
     new Bootstrap()
       .option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectTimeoutMills)
+      .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
       .group(config.eventLoopGroup)
       .channel(config.channelClass)
-      .handler(new NettyConnectionCodec(config.charset))
-      .handler(Handler)
+      .handler(new ConnectionInitializer(context))
   }
-
-  @ChannelHandler.Sharable
-  object Handler extends ChannelHandlerAdapter {
-
-    def channelActive(ctx: ChannelHandlerContext) {
-      val handshake = Handshake(config.magic, config.authKey, config.protocol)
-      ctx.writeAndFlush(handshake);
-    }
-
-    def channelRead(ctx: ChannelHandlerContext, msg: AnyRef) = {
-      msg match {
-        case "SUCCESS" => handshake.tryComplete(Success(true))
-        case m: Message =>
-          registry.get(m.token).foreach(_.trySuccess(m))
-          registry.remove(m.token)
-        case err: String =>
-          handshake.tryFailure(new Exception(err))
-      }
-    }
-
-    override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-      ctx.close()
-      makeFail(cause)
-    }
-
-    private def makeFail(cause: Throwable) = {
-      val removed = for {
-        (k, v) <- registry if !v.isCompleted
-      } v.tryFailure(cause)
-
-    }
-  }
-
 }
 
 object ChannelFutures {
-
-  def asScala(f: ChannelFuture) = {
-    val p = Promise[Channel]
-    f.addListener(new  ChannelFutureListener {
-      override def operationComplete(f: ChannelFuture) = {
-        if(f.isSuccess()) {
-          p.success(f.channel())
-        } else {
-          p.failure(f.cause())
+  implicit class ChannelFutureSyntax(val f: ChannelFuture) extends AnyVal {
+    def asScala = {
+      val p = Promise[Channel]
+      f.addListener(new  ChannelFutureListener {
+        override def operationComplete(f: ChannelFuture) = {
+          if(f.isSuccess()) {
+            p.success(f.channel())
+          } else {
+            p.failure(f.cause())
+          }
         }
-      }
-    })
-    p.future
+      })
+      p.future
+    }
   }
 }

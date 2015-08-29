@@ -6,31 +6,33 @@ import io.netty.handler.codec._
 import java.nio.charset.Charset
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
+import org.slf4j._
 import scala.collection.concurrent.TrieMap
 import scala.concurrent._
 
-@ChannelHandler.Sharable
-class NettyConnectionCodec(charset: Charset) extends ByteToMessageCodec[Any] {
+class NettyConnectionCodec(context: HandlerContext) extends ByteToMessageCodec[Any] {
 
   type Ctx = ChannelHandlerContext
   type Buf = ByteBuf
   type Outs = java.util.List[AnyRef]
 
-  val handshakeComplete = new AtomicBoolean(false)
+  private val charset = context.config.charset
+  private val handshakeComplete = new AtomicBoolean(false)
 
   override def decode(ctx: Ctx, buf: Buf, outs: Outs) = {
-    if(handshakeComplete.compareAndSet(false, true)) {
-      decodeHandshake(ctx, buf, outs)
-    } else {
+    if(handshakeComplete.get()) {
       decodeMessage(ctx, buf, outs)
+    } else {
+      decodeHandshake(ctx, buf, outs)
     }
   }
 
   override def encode(ctx: Ctx, msg: Any, buf: Buf) = {
-    if(handshakeComplete.compareAndSet(false, true)) {
-      encodeHandshake(msg.asInstanceOf[Handshake], buf)
-    } else {
-      encodeMessage(msg.asInstanceOf[Message], buf)
+    msg match {
+      case m: Message =>
+        encodeMessage(m, buf)
+      case h: Handshake =>
+        encodeHandshake(h, buf)
     }
   }
 
@@ -38,47 +40,60 @@ class NettyConnectionCodec(charset: Charset) extends ByteToMessageCodec[Any] {
     val out = HandshakeFrameDecoder.decodeHandshake(ctx, buf)
     if(out != null) {
       outs.add(out)
+      handshakeComplete.set(true)
     }
   }
 
   private def decodeMessage(ctx: Ctx, buf: Buf, outs: Outs) = {
-    val frame = MessageFrameDecoder.decodeMessage(ctx, buf)
-    if(frame != null) {
-      val frameBuf = frame.asInstanceOf[Buf]
-      val token = frameBuf.readLong()
-      val length = frameBuf.readInt()
-      val body = frameBuf.toString(12, length, charset)
-      outs.add(Message(token, body))
+   val out = MessageFrameDecoder.decodeMessage(ctx, buf.order(ByteOrder.LITTLE_ENDIAN))
+    if(out != null) {
+      outs.add(out)
     }
   }
 
   private def encodeMessage(m: Message, buf: Buf) = {
     val bodyBytes = m.body.getBytes(charset)
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    buf.writeLong(m.token)
-    buf.writeInt(bodyBytes.size)
-    buf.writeBytes(bodyBytes)
+    val out = buf.order(ByteOrder.LITTLE_ENDIAN)
+    out.writeLong(m.token)
+    out.writeInt(bodyBytes.length)
+    out.writeBytes(bodyBytes)
   }
 
   private def encodeHandshake(m: Handshake, buf: Buf) = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
+    val out = buf.order(ByteOrder.LITTLE_ENDIAN)
     val keyBytes = m.authKey.getBytes("ascii")
-    buf.writeInt(m.magic)
-    buf.writeInt(keyBytes.size)
-    buf.writeBytes(keyBytes)
-    buf.writeInt(m.protocol)
+    out.capacity(8 + 4 + keyBytes.length)
+      .writeInt(m.magic)
+      .writeInt(keyBytes.length)
+      .writeBytes(keyBytes)
+      .writeInt(m.protocol)
   }
 
   private[net] object MessageFrameDecoder
-      extends LengthFieldBasedFrameDecoder(8 * 1024 * 1024, 8, 4) {
+      extends LengthFieldBasedFrameDecoder(ByteOrder.LITTLE_ENDIAN, 8 * 1024 * 1024, 8, 4, 0, 0, true) {
     def decodeMessage(ctx: Ctx, buf: Buf) = {
-      decode(ctx, buf)
+      val frame = decode(ctx, buf)
+      frame match {
+        case m : ByteBuf =>
+          val token = m.readLong()
+          val length = m.readInt()
+          val body = m.toString(12, length, charset)
+          Message(token, body)
+        case _ => frame
+      }
     }
   }
   private[net] object HandshakeFrameDecoder
       extends DelimiterBasedFrameDecoder(1024, Delimiters.nulDelimiter: _*) {
     def decodeHandshake(ctx: Ctx, buf: Buf) = {
-      decode(ctx, buf)
+      val frame = decode(ctx, buf)
+      frame match {
+        case m:ByteBuf =>
+          val bytes = new Array[Byte](m.readableBytes())
+          m.readBytes(bytes)
+          new String(bytes)
+        case _ => frame
+      }
     }
   }
 }
