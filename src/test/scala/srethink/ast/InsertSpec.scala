@@ -2,6 +2,7 @@ package srethink.ast
 
 import play.api.rql._
 import srethink._
+import play.api.libs.json._
 
 class InsertSpec extends RethinkSpec with WithData {
   "insert api" should {
@@ -11,9 +12,14 @@ class InsertSpec extends RethinkSpec with WithData {
     }
 
     "insert JsValues value" in {
-      val items = Seq(jsBook(1), jsBook(2))
-      val ir = books.insertJS(items).runAs[InsertResult]
+      val items = Seq(Json.parse(json))
+
+      val ir = books.insert(items).runAs[InsertResult]
       ir.map(_.inserted) must be_==(2).await
     }
+
+    def json = """
+{"id":13349038,"formId":"7cf56f95-d983-4247-9479-5aac07388c7d","answers":[2, [{"fieldValues":[2, [29,10]]}]],"isNotified":true}
+"""
   }
 }

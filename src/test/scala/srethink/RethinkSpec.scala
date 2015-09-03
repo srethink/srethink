@@ -2,7 +2,7 @@ package srethink
 
 import org.specs2.mutable.Specification
 import org.specs2.specification._
-import play.api.libs.json.{Format, Json, Writes}
+import play.api.libs.json._
 import srethink.net._
 import play.api.rql._
 
@@ -27,7 +27,6 @@ trait RethinkOperatorSpec extends  WithData {
       }
       fut.andThen {
         case scala.util.Failure(e) =>
-          println(e.getMessage)
       }.await(10)
     }
   }
@@ -41,7 +40,6 @@ trait WithData extends RethinkSpec with BeforeExample  {
       ir <- books.insert(seq).runAs[InsertResult]
       r <- q.runAs[T]
     } yield {
-      println(stringify(encode[T](r)))
       expectF(r)
     }
     fut.andThen {
@@ -59,6 +57,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
       author = "author" + i,
       price = i.toDouble,
       quantity = i,
+      desc = JsString("desc" + i),
       releaseDate = new java.util.Date()
     )
   }

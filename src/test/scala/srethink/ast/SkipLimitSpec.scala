@@ -3,14 +3,16 @@ package srethink.ast
 import srethink._
 
 class SkipLimitSpec extends RethinkSpec with WithData {
-  val b1 = book(1).copy(id = Some("1"))
-  val b2 = book(2).copy(id = Some("2"))
+  val docs = (1 to 10000).map(i => book(i).copy(id = Some(i.toString)))
   "skip limit api" should {
     "skip first doc" in {
-      testQuery[Seq[Book]](b1, b2)(books.skip(1))(_.size == 1)
+      testQuery[Seq[Book]](docs: _*)(books.skip(1).limit(10000)) { r =>
+        println(r.size);
+        r.size >= 99
+      }
     }
     "limit to first doc" in {
-      testQuery[Seq[Book]](b1, b2)(books.limit(1))(_.size == 1)
+      testQuery[Seq[Book]](docs: _*)(books.limit(1))(_.size == 1)
     }
   }
 }

@@ -49,6 +49,10 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(INSERT_VALUE, Seq(table, rArray(values)), options)
   }
 
+  def rInsertOne(table: J, value: J, options: J) = {
+    rTerm(INSERT_VALUE, Seq(table, value), options)
+  }
+
   def rTable(db: J, name: String, options: J = EmptyOpts): J = {
     rTerm(TABLE_VALUE, Seq(db, name), options)
   }
@@ -78,7 +82,9 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
   }
 
   def rGetAll(table: J,keys: Seq[J], options: J = EmptyOpts) = {
-    rTerm(GET_ALL_VALUE, table +: keys, options )
+    val r = rTerm(GET_ALL_VALUE, table +: keys, options)
+    println(r)
+    r
   }
 
   def rGet(table: J,key: J, options: J = EmptyOpts) = {

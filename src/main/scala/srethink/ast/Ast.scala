@@ -155,6 +155,10 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       new EndAst(rInsert(term, docs, jsObject(opts)))
     }
 
+    def insertOne(doc: J, opts: (String, J)*) = {
+      new EndAst(rInsertOne(term, doc, jsObject(opts)))
+    }
+
     def indexCreate(name: String)(f: Var => Expr) = {
       new EndAst(rIndexCreate(term, name, toJ(f)))
     }
