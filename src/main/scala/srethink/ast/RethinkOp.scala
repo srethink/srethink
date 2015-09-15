@@ -47,7 +47,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
         unapplyJsArray(body)
       case (token, SUCCESS_PARTIAL, body) =>
         executor.stop(token, stringify(rStopQuery()))
-        throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${SUCCESS_PARTIAL}")
+        unapplyJsArray(body)
       case (t, SUCCESS_ATOM, body) =>
         unapplyJsArray(body)(0)
       case (t, rt, body) =>

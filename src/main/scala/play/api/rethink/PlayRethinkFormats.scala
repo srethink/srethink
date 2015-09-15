@@ -42,7 +42,8 @@ trait PlayRethinkFormats {
   implicit val timeReads : Reads[Date] = new Reads[Date] {
     def reads(json: JS) = {
       json match {
-        case JsObject(("$reql_type$", JsString("TIME")) +: ("epoch_time", JsNumber(t)) +: tail) =>
+        case JsObject(props) if props.get("$reql_type$") == Some(JsString("TIME")) =>
+          val JsNumber(t) = props("epoch_time")
           JsSuccess(new Date((t * 1000).toLong))
       }
     }
@@ -72,11 +73,4 @@ trait PlayRethinkFormats {
   lazy implicit val doubleF = implicitly[Format[Double]]
   lazy implicit val stringF = implicitly[Format[String]]
   lazy implicit val dateF = implicitly[Format[Date]]
-
-  implicit def traversableWrites[A: Writes] = new Writes[Traversable[A]] {
-    def writes(as: Traversable[A]) = {
-      val raw = JsArray(as.map(Json.toJson(_)).toSeq)
-      JsArray(Seq(JsNumber(MAKE_ARRAY_VALUE), raw))
-    }
-  }
 }

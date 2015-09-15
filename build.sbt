@@ -2,9 +2,9 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.9-SNAPSHOT"
+version := "0.0.10.1"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.6"
 
 crossScalaVersions := Seq("2.10.4", "2.11.4")
 
@@ -12,7 +12,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 libraryDependencies <<= scalaVersion{ scalaVersion =>
   val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
-  val playV = "2.3.4"
+  val playV = "2.4.2"
   val nettyV = "3.9.3.Final"
   Seq(
     "io.netty"          % "netty"         % nettyV,

@@ -29,4 +29,5 @@ trait JsonDef[J, F[_]] {
   implicit def jsObject(seq: Seq[(String, J)]): J
   def unapplyJsArray(j: J): Seq[J]
   def unapplyJsObject(j: J): Seq[(String, J)]
+  def transformArray(j: J): J
 }

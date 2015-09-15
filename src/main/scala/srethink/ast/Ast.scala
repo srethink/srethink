@@ -152,7 +152,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
 
     def insertJS(docs: Seq[J], opts: (String, J)*) = {
-      new EndAst(rInsert(term, docs, jsObject(opts)))
+      new EndAst(rInsert(term, docs.map(transformArray), jsObject(opts)))
     }
 
     def indexCreate(name: String)(f: Var => Expr) = {
