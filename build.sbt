@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.11.1"
+version := "0.0.11.2"
 
 scalaVersion := "2.11.6"
 
@@ -54,3 +54,5 @@ instrumentSettings
 coverallsSettings
 
 ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
+
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))

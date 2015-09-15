@@ -51,6 +51,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
   }
 
   lazy val books = r.db("library").table("book")
+  implicit val coAuthorCodec: Format[CoAuthor] = Json.format[CoAuthor]
   implicit val bookCodec: Format[Book] = Json.format[Book]
 
   def book(i: Int) = {

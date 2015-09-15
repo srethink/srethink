@@ -132,17 +132,17 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       extends Selection(rTable(db, name, jsObject(opt))) with  Ast {
 
     def get[K: F](key: K, opt: (String, J)*) = {
-      new Selection(rGet(term, encode[K](key), jsObject(opt)))
+      new Selection(rGet(term, transformArray(encode[K](key)), jsObject(opt)))
     }
 
     def getAll[K: F](keys: Seq[K], opt: (String, J)*) = {
-      val jsKeys = keys.map(encode[K])
+      val jsKeys = keys.map(k => transformArray(encode[K](k)))
       new Selection(rGetAll(term, jsKeys, jsObject(opt)))
     }
 
     def between[K: F](lower: K, upper: K, opt: (String, J)*) = {
-      val lowerJ = encode[K](lower)
-      val upperJ = encode[K](upper)
+      val lowerJ = transformArray(encode[K](lower))
+      val upperJ = transformArray(encode[K](upper))
       new Selection(rBetween(term, lowerJ, upperJ, jsObject(opt)))
     }
 
