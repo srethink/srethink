@@ -34,6 +34,8 @@ scalacOptions ++= Seq(
   "-language:reflectiveCalls"
 )
 
+seq(bintraySettings:_*)
+
 ScoverageKeys.minimumCoverage := 80
 
 ScoverageKeys.failOnMinimumCoverage := true
