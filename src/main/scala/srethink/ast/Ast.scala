@@ -21,6 +21,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
         case (k, v) => k -> v.term
       })
     }
+    def asc(field: String) = new ROrder(rAsc(field))
+    def desc(field: String) = new ROrder(rDesc(field))
   }
 
   trait Ast {
@@ -112,6 +114,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     def limit(n: Int) = {
       new Selection(rLimit(term, n))
     }
+
+    def orderBy(order: ROrder) = new Selection(rOrderBy(term, order.term))
   }
 
   class Database(dbName: String) extends Ast {
@@ -123,6 +127,10 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       new EndAst(rTableCreate(term, name, jsObject(options)))
 
     def tableDrop(name: String) = new EndAst(rTableDrop(term, name))
+  }
+
+  class ROrder(j: J) extends Ast {
+    val term = j
   }
 
   class Table(

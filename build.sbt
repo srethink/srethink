@@ -2,11 +2,11 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.11.2"
+version := "0.0.12"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.10.4", "2.11.4")
+crossScalaVersions := Seq("2.10.4", "2.11.7")
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
