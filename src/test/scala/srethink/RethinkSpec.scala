@@ -56,6 +56,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
 
   def book(i: Int) = {
     Book(
+      seq = i,
       title = "title" + i,
       author = "author" + i,
       price = i.toDouble,
@@ -67,6 +68,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
   def jsBook(i: Int) = {
     jsObject(
       Seq(
+        "seq" -> jsNumber(i),
         "title" -> jsString("title" + i),
         "author" -> jsString("author" + i),
         "price" -> jsNumber(i.toDouble),

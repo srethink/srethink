@@ -129,6 +129,22 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(EQ_VALUE, Seq(left, right))
   }
 
+  def rGt(left: J, right: J) = {
+    rTerm(GT_VALUE, Seq(left, right))
+  }
+
+  def rGe(left: J, right: J) = {
+    rTerm(GE_VALUE, Seq(left, right))
+  }
+
+  def rLt(left: J, right: J) = {
+    rTerm(LT_VALUE, Seq(left, right))
+  }
+
+  def rLe(left: J, right: J) = {
+    rTerm(LE_VALUE, Seq(left, right))
+  }
+
   def rNth(term: J, n: Int) = {
     rTerm(NTH_VALUE, Seq(term, jsNumber(n)))
   }

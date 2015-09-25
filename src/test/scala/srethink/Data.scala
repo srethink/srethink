@@ -2,6 +2,7 @@ package srethink
 
 case class Book(
   id: Option[String] = None,
+  seq: Int,
   title: String,
   author: String,
   coAuthors: Seq[CoAuthor] = Seq(),

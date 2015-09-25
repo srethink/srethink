@@ -11,6 +11,5 @@ class OrderBySpec extends RethinkSpec with WithData {
     "order the elements" in {
       testQuery[Seq[Book]](b1, b2, b3)(books.orderBy(r.desc("id")).limit(1))(_.head.id == Some("3"))
     }
-
   }
 }
