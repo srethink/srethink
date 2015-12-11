@@ -2,9 +2,9 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.9.2"
+version := "0.0.9.3"
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.7"
 
 crossScalaVersions := Seq("2.10.4", "2.11.4")
 

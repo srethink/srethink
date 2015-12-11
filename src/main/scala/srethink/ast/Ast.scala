@@ -50,7 +50,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     def === (that: Expr) = new Expr(rEq(term, that.term))
     def count() = new Expr(rCount(term))
     def nth(i: Int) =  new Expr(rNth(term, i))
-    def max(field: String)= new Expr(rMax(term, field))
+    def max(field: String, options: (String, J)*) = new Expr(rMax(term, field))
+
     def selectDynamic(field: String) = {
       new Expr(rGetField(term, field))
     }
@@ -73,6 +74,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
 
     def max(field: String)= new Selection(rMax(term, field))
+
+    def maxByIndex(index: String) = new Selection(rMax(term, jsObject(Seq("index" -> jsString(index)))))
 
     def delete(options: (String, J)*) = {
       new EndAst(rDelete(term, jsObject(options)))

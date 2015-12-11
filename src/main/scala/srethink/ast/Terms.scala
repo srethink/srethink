@@ -172,6 +172,10 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(MAX_VALUE, Seq(term, field))
   }
 
+  def rMax(term: J, options: J = EmptyOpts) = {
+    rTerm(MAX_VALUE, Seq(term), options)
+  }
+
   def rMax(term: J) = {
     rTerm(MAX_VALUE, Seq(term))
   }
