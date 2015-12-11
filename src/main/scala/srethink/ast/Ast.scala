@@ -21,6 +21,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
         case (k, v) => k -> v.term
       })
     }
+    def asc(field: String) = new ROrder(rAsc(field))
+    def desc(field: String) = new ROrder(rDesc(field))
   }
 
   trait Ast {
@@ -60,6 +62,10 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
   class Var(val term: J) extends Dynamic with Ast with ExprOps {
   }
 
+  class ROrder(j: J) extends Ast {
+    val term = j
+  }
+
   class EndAst(val term: J) extends Ast
 
   implicit class Expr(val term: J) extends Ast with ExprOps with Dynamic{
@@ -75,11 +81,15 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
 
     def max(field: String)= new Selection(rMax(term, field))
 
-    def maxByIndex(index: String) = new Selection(rMax(term, jsObject(Seq("index" -> jsString(index)))))
+    def maxByIndex(index: String) = orderByIndex(r.desc(index)).limit(1)
 
     def delete(options: (String, J)*) = {
       new EndAst(rDelete(term, jsObject(options)))
     }
+
+    def orderBy(order: ROrder) = new Selection(rOrderBy(term, order.term))
+
+    def orderByIndex(order: ROrder) = new Selection(rOrderByOptions(term, jsObject(Seq("index" -> order.term))))
 
     def count() = {
       new Selection(rCount(term))

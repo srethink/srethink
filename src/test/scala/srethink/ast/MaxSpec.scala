@@ -12,12 +12,12 @@ class MaxSpec extends RethinkSpec with WithData{
       val fut = for{
         //drop first
         _ <- books.indexDrop("quantity").runAs[CreateResult].recover{case e => true}
-        cr <- books.indexCreate("quantity")(_.author).runAs[CreateResult]
-        _ <- {Thread.sleep(3000); books.insert(Seq(b1, b2, b3)).runAs[InsertResult]}
-        r <- books.maxByIndex("quantity").runAs[Book]
+        cr <- books.indexCreate("quantity")(_.quantity).runAs[CreateResult]
+        ir <- {Thread.sleep(3000); books.insert(Seq(b1, b2, b3)).runAs[InsertResult]}
+        r <- books.between(0, 100, "index" -> "quantity").maxByIndex("quantity").map(_.quantity).runAs[Seq[Int]]
       } yield {
         cr.created must be_==(1)
-        r.quantity must be_==(3)
+        r should have size(1)
       }
       fut.await(10)
     }

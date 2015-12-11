@@ -179,4 +179,21 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
   def rMax(term: J) = {
     rTerm(MAX_VALUE, Seq(term))
   }
+
+  def rAsc(field: String) = {
+    rTerm(ASC_VALUE, Seq(field))
+  }
+  def rDesc(field: String) = {
+    rTerm(DESC_VALUE, Seq(field))
+  }
+
+  def rOrderBy(term: J, order: J) = {
+    rTerm(ORDERBY_VALUE, Seq(term, order))
+  }
+
+  def rOrderByOptions(term: J, options: J = EmptyOpts) = {
+    rTerm(ORDERBY_VALUE, Seq(term), options)
+  }
+
+
 }
