@@ -9,7 +9,7 @@ class OrderBySpec extends RethinkSpec with WithData {
   val b3 = book(3).copy(id = Some("3"))
   "order by api" should {
     "order the elements" in {
-      testQuery[Seq[Book]](b1, b2, b3)(books.orderBy(r.desc("id")).limit(1))(_.head.id == Some("3"))
+      testQuery[Seq[Book]](b1, b2, b3)(books.orderBy(r.desc("id"), r.asc("seq")).limit(1))(_.head.id == Some("3"))
     }
   }
 }

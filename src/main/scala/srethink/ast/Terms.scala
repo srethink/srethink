@@ -129,6 +129,10 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(EQ_VALUE, Seq(left, right))
   }
 
+  def rNe(left: J, right: J) = {
+    rTerm(NE_VALUE, Seq(left, right))
+  }
+
   def rGt(left: J, right: J) = {
     rTerm(GT_VALUE, Seq(left, right))
   }
@@ -190,8 +194,8 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(ASC_VALUE, Seq(field))
   }
 
-  def rOrderBy(term: J, order: J) = {
-    rTerm(ORDERBY_VALUE, Seq(term, order))
+  def rOrderBy(term: J, order: Seq[J]) = {
+    rTerm(ORDERBY_VALUE, term +: order)
   }
 
   def rDesc(field: String) = {

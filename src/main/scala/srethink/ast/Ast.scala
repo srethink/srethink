@@ -50,6 +50,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     def * (that: Expr) = new Expr(rMul(term, that.term))
     def / (that: Expr) = new Expr(rDiv(term, that.term))
     def === (that: Expr) = new Expr(rEq(term, that.term))
+    def =!= (that: Expr) = new Expr(rNe(term, that.term))
     def > (that: Expr) = new Expr(rGt(term, that.term))
     def < (that: Expr) = new Expr(rLt(term, that.term))
     def >= (that: Expr) = new Expr(rGe(term, that.term))
@@ -119,7 +120,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       new Selection(rLimit(term, n))
     }
 
-    def orderBy(order: ROrder) = new Selection(rOrderBy(term, order.term))
+    def orderBy(order: ROrder*) = new Selection(rOrderBy(term, order.map(_.term)))
   }
 
   class Database(dbName: String) extends Ast {
