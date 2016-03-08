@@ -89,6 +89,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
     val fut = for {
       _ <- r.dbCreate("library").runAs[CreateResult].recover{case e => }
       _ <- r.db("library").tableCreate("book").runAs[CreateResult].recover{case e => }
+      _ <- r.db("library").table("book").indexCreate("sequence")(_.seq).runAs[CreateResult].recover { case e => }
       _ <- books.delete().runAs[DropResult]
     } yield true
     Await.ready(fut, duration.Duration.Inf)

@@ -198,7 +198,15 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(ORDERBY_VALUE, term +: order)
   }
 
+  def rOrderByOption(term: J, order: J) = {
+    rTerm(ORDERBY_VALUE, Seq(term), order)
+  }
+
   def rDesc(field: String) = {
     rTerm(DESC_VALUE, Seq(field))
+  }
+
+  def rDefault(term: J, default: J) = {
+    rTerm(DEFAULT_VALUE, Seq(term, default))
   }
 }

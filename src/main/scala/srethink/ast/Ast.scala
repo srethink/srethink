@@ -58,6 +58,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     def count() = new Expr(rCount(term))
     def nth(i: Int) =  new Expr(rNth(term, i))
     def max(field: String)= new Expr(rMax(term, field))
+    def default(that: Expr) = new Expr(rDefault(term, that.term))
     def selectDynamic(field: String) = {
       new Expr(rGetField(term, field))
     }
@@ -121,6 +122,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
 
     def orderBy(order: ROrder*) = new Selection(rOrderBy(term, order.map(_.term)))
+    def orderByIndex(order: ROrder) = new Selection(rOrderByOption(term, Seq("index" -> order.term)))
   }
 
   class Database(dbName: String) extends Ast {

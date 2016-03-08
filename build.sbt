@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.13"
+version := "0.0.16"
 
 scalaVersion := "2.11.7"
 
