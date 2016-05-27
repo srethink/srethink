@@ -16,8 +16,8 @@ import scala.util._
 case class NettyConnectionConfig(
   host: String = "127.0.0.1",
   port: Int = 28015,
-  magic: Int = Protocol.V0_4_VALUE,
-  protocol: Int = Protocol.JSON_VALUE,
+  magic: Int = Version.V0_4,
+  protocol: Int = Protocol.JSON,
   authKey: String = "",
   connectTimeoutMills: Int = 3000,
   eventLoopGroup: EventLoopGroup = new NioEventLoopGroup(),

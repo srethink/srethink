@@ -13,6 +13,6 @@ object Helper {
   }
 
   def makeArray(elements: Seq[Json]) = {
-    term(TermConstant.MAKE_ARRAY_VALUE, elements, Nil)
+    term(TermType.MAKE_ARRAY, elements, Nil)
   }
 }
