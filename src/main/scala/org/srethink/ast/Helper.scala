@@ -7,9 +7,9 @@ object Helper {
 
   def term(tpe: Int, args: Seq[Json], options: Seq[(String, Json)]) = {
     if(options.isEmpty)
-      Json.array(Json.int(tpe), Json.array(args: _*))
+      Json.arr(Json.fromInt(tpe), Json.arr(args: _*))
     else
-      Json.array(Json.int(tpe), Json.array(args: _*), Json.obj(options: _*))
+      Json.arr(Json.fromInt(tpe), Json.arr(args: _*), Json.obj(options: _*))
   }
 
   def makeArray(elements: Seq[Json]) = {
