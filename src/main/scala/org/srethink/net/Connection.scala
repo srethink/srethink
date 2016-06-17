@@ -5,7 +5,7 @@ import scala.concurrent.Future
 trait Connection {
   def execute(message: Message): Future[Message]
 
-  def close(): Future[_]
+  def close(): Future[Unit]
 
-  def connect(): Future[_]
+  def connect(): Future[Unit]
 }
