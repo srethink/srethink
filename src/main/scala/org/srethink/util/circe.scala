@@ -15,7 +15,7 @@ object circe {
       if(f.isDefinedAt(j)) {
         Trampoline.done(f(j))
       } else {
-        json.arrayOrObject(
+        j.arrayOrObject(
           Trampoline.done(j) ,
           _.traverse(e => Trampoline.suspend(transform(e, f))).map(Json.fromValues),
           _.traverse(e => Trampoline.suspend(transform(e, f))).map(Json.fromJsonObject)

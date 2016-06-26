@@ -37,7 +37,7 @@ case class Table(db: DB, name: String, options: Seq[Opt]) extends Sequence {
 }
 
 case class Insert(table: Table, values: Seq[Json]) extends Action {
-  def term = Helper.term(TermType.INSERT, values)
+  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values)))
 }
 
 case class Get(table: Table, key: Json) extends Atom {

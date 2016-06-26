@@ -15,15 +15,16 @@ trait AstSpec extends RethinkSpec with BeforeAndAfterAll {
   lazy val books = r.db(databaseName).table(tableName)
 
   override def beforeAll(): Unit = {
+    create()
   }
 
   override def afterAll(): Unit = {
-
+    drop()
   }
 
   private def create() = {
-    ready(rdb.run(r.dbCreate(databaseName)))
-    ready(rdb.run(r.db(databaseName).tableCreate("book")))
+    await(rdb.run(r.dbCreate(databaseName)))
+    await(rdb.run(r.db(databaseName).tableCreate("book")))
   }
 
   private def drop() = {

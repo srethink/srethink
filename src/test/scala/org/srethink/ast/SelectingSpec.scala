@@ -7,7 +7,7 @@ import io.circe.generic.auto._
 trait SelectingSpec extends AstSpec with SelectingData {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    rdb.run(books.insert(book1, book2, book3))
+    await(rdb.run(books.insert(book1, book2, book3)))
   }
 }
 
