@@ -2,8 +2,8 @@ package org.srethink.ast
 
 import io.circe._
 
-abstract class ROption[T:Encoder](key: String, _value: T) {
-  def value = implicitly[Encoder[T]].apply(_value)
+abstract class ROption[T:Encoder](key: String, value: T) {
+  def jsonValue = implicitly[Encoder[T]].apply(_value)
 }
 
 case class RBooleanOption(_key: String, _value: Boolean) extends ROption(_key, _value)
