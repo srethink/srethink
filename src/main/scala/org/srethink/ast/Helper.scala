@@ -5,7 +5,7 @@ import org.srethink.net._
 
 object Helper {
 
-  def term(tpe: Int, args: Seq[Json], options: Seq[(String, Json)]) = {
+    def term(tpe: Int, args: Seq[Json], options: Seq[(String, Json)] = Seq.empty) = {
     if(options.isEmpty)
       Json.arr(Json.fromInt(tpe), Json.arr(args: _*))
     else

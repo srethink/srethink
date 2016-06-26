@@ -36,7 +36,7 @@ object ResponseType {
 object DatumType {
   val R_NULL   = 1;
   val R_BOOL   = 2;
-  val R_NUM    = 3; // a double
+  val R_NUM    = 3;
   val R_STR    = 4;
   val R_ARRAY  = 5;
   val R_OBJECT = 6;

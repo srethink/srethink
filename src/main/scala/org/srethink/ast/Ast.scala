@@ -1,16 +1,11 @@
 package org.srethink.ast
 
 import io.circe.Json
+import org.srethink.net._
+import scala.language.dynamics
 
-trait Ast[A] {
-  def show[A: AstShow] = implicitly[AstShow[A]].show(this)
+trait Ast extends Any {
+  def term: Json
 }
 
-case class Db(name: String) {
-  def table(name: String, options: (String, Json) *) = {
-    Table(this, name, options)
-  }
-}
-case class Table(db: Db, name: String, options: Seq[(String, Json)])
-case class Get(table: TABLE, key: Json)
-case class GetAll(table: Table, keys: Seq[Json])
+trait Action extends Ast

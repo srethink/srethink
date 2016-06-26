@@ -20,9 +20,9 @@ case class NettyConnectionConfig(
   protocol: Int = Protocol.JSON,
   authKey: String = "",
   connectTimeoutMills: Int = 3000,
+
   eventLoopGroup: EventLoopGroup = new NioEventLoopGroup(),
   channelClass: Class[_ <: Channel] = classOf[NioSocketChannel],
-  executionContext: ExecutionContext = ExecutionContext.global,
   charset: Charset = Charset.defaultCharset())
 
 
@@ -32,9 +32,14 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   private val registry = new TrieMap[Long, Promise[Message]]
   private val logger = LoggerFactory.getLogger(classOf[NettyConnection])
   private val context = HandlerContext(config, registry, handshake, logger)
-  private implicit val ec = config.executionContext
+  private implicit val ec = org.srethink.exec.trampoline
+  @volatile
+  var _closed = false
+
+  def closed = _closed
 
   def execute(m: Message): Future[Message] = {
+    logger.debug("Sending query {}", m)
     channel.flatMap { c =>
       registry.put(m.token, Promise[Message])
       c.writeAndFlush(m)
@@ -43,11 +48,20 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   }
 
   def connect() = {
-    channel.flatMap(_ => handshake.future)
+    channel.map { ch =>
+      ch.closeFuture.addListener(new ChannelFutureListener {
+        def operationComplete(f: ChannelFuture) = {
+          _closed = true
+        }
+      })
+    }.onFailure {
+      case ex: Throwable => _closed = true
+    }
+    channel.flatMap(_ => handshake.future).map(_ => {})
   }
 
   def close() = {
-    channel.flatMap(_.close().asScala)
+    channel.flatMap(_.close().asScala).map(_ => {})
   }
 
   lazy val channel = {
