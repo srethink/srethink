@@ -3,12 +3,8 @@ package org.srethink.net
 import io.netty.buffer._
 import io.netty.channel._
 import io.netty.handler.codec._
-import java.nio.charset.Charset
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
-import org.slf4j._
-import scala.collection.concurrent.TrieMap
-import scala.concurrent._
 
 class NettyConnectionCodec(context: HandlerContext) extends ByteToMessageCodec[Any] {
 

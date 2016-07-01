@@ -23,8 +23,8 @@ trait AstSpec extends RethinkSpec with BeforeAndAfterAll {
   }
 
   private def create() = {
-    await(rdb.run(r.dbCreate(databaseName)))
-    await(rdb.run(r.db(databaseName).tableCreate("book")))
+    ready(rdb.run(r.dbCreate(databaseName)))
+    ready(rdb.run(r.db(databaseName).tableCreate("book")))
   }
 
   private def drop() = {

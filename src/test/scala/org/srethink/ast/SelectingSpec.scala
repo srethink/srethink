@@ -1,13 +1,11 @@
 package org.srethink.ast
 
-import io.circe._
 import io.circe.generic.auto._
-
 
 trait SelectingSpec extends AstSpec with SelectingData {
   override def beforeAll(): Unit = {
     super.beforeAll()
-    await(rdb.run(books.insert(book1, book2, book3)))
+    ready(rdb.run(books.insert(book1, book2, book3)))
   }
 }
 

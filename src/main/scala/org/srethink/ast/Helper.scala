@@ -11,7 +11,6 @@ object Helper {
    Json.arr(Json.fromInt(queryType), term, Json.obj(optargs: _*))
   }
 
-
   def startQuery(term: Json, optargs: Opts = Seq.empty) = {
     query(QueryType.START, term, optargs)
   }
@@ -24,6 +23,6 @@ object Helper {
   }
 
   def makeArray(elements: Seq[Json]) = {
-    term(TermType.MAKE_ARRAY, elements, Nil)
+    term(TermType.MAKE_ARRAY, elements)
   }
 }

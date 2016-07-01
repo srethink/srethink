@@ -8,6 +8,9 @@ object r extends Global {
 
   type Config = NettyConnectionConfig
 
+  type RDB = QueryExec
+  type DB = org.srethink.ast.DB
+
   def db(name: String) = new DB(name)
 
   def dbCreate(name: String) = new DBCreate(name)

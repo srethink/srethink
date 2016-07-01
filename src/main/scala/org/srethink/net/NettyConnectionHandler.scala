@@ -20,7 +20,7 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
   private val handshake = context.handshake
   private val logger = context.logger
 
-  override def channelActive(ctx: ChannelHandlerContext) {
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
     logger.info("Channel active, send handshake...")
     val h = Handshake(config.magic, config.authKey, config.protocol)
     ctx.channel.writeAndFlush(h)
@@ -43,11 +43,10 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
     }
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     ctx.close()
     makeFail(cause)
   }
-
   private def makeFail(cause: Throwable) = {
     val removed = for {
       (k, v) <- registry if !v.isCompleted
@@ -57,7 +56,8 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
 
 
 class ConnectionInitializer(context: HandlerContext) extends  ChannelInitializer[SocketChannel] {
-  override def initChannel(ch: SocketChannel) {
+  val cfg = context.config
+  override def initChannel(ch: SocketChannel): Unit = {
     val pipe = ch.pipeline()
     pipe.addLast(new NettyConnectionCodec(context))
     pipe.addLast(new ConnectionHandler(context))

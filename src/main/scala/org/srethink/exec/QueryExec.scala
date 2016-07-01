@@ -5,7 +5,6 @@ import cats.syntax.traverse._
 import io.circe._
 import cats.std.list._
 import io.circe.parser._
-import io.circe.syntax._
 import io.circe.generic.auto._
 import java.util.concurrent.atomic.AtomicLong
 import org.srethink.ast._
@@ -26,8 +25,8 @@ class QueryExec(val config: ExecConfig) {
   implicit val ec = trampoline
 
   def execute(json: Json) = {
-    val m = Message(tg.incrementAndGet(), json.noSpaces)
-    config.connectionFactory.get().execute(m).map(_.body)
+    val m = Message(tg.incrementAndGet(), json.toString)
+    config.connectionFactory.get().flatMap(_.execute(m).map(_.body))
   }
 
   def query(json: Json) = {
@@ -36,7 +35,7 @@ class QueryExec(val config: ExecConfig) {
 
   def run[T: Decoder](ast: Sequence) = query(ast.term).flatMap(decodeAsFuture[T])
 
-  def run[T: Decoder](ast: Atom) = query(ast.term).flatMap(decodeAsFuture[T])
+  def run[T: Decoder](ast: Atom) = query(ast.term).flatMap(decodeAsFuture[T]).map(_.head)
 
   def run(action: Action) = query(action.term).flatMap(decodeAsFuture[Json])
 

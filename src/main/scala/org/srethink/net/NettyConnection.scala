@@ -6,12 +6,10 @@ import io.netty.channel.nio._
 import io.netty.channel.socket.nio._
 import java.net._
 import java.nio.charset.Charset
-import java.util.concurrent.atomic._
 import org.srethink.net.ChannelFutures._
 import org.slf4j._
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{Future, Promise, ExecutionContext}
-import scala.util._
+import scala.concurrent.{Future, Promise}
 
 case class NettyConnectionConfig(
   host: String = "127.0.0.1",
@@ -20,7 +18,7 @@ case class NettyConnectionConfig(
   protocol: Int = Protocol.JSON,
   authKey: String = "",
   connectTimeoutMills: Int = 3000,
-
+  readTimeoutMillis: Int = 10000,
   eventLoopGroup: EventLoopGroup = new NioEventLoopGroup(),
   channelClass: Class[_ <: Channel] = classOf[NioSocketChannel],
   charset: Charset = Charset.defaultCharset())
@@ -33,30 +31,24 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   private val logger = LoggerFactory.getLogger(classOf[NettyConnection])
   private val context = HandlerContext(config, registry, handshake, logger)
   private implicit val ec = org.srethink.exec.trampoline
-  @volatile
-  var _closed = false
-
-  def closed = _closed
+  def closed = channel.map(!_.isOpen)
 
   def execute(m: Message): Future[Message] = {
-    logger.debug("Sending query {}", m)
     channel.flatMap { c =>
-      registry.put(m.token, Promise[Message])
-      c.writeAndFlush(m)
-      registry(m.token).future
+      val p = Promise[Message]
+      registry.put(m.token, p)
+      c.writeAndFlush(m).addListener(new ChannelFutureListener {
+        def operationComplete(f: ChannelFuture) = {
+          if(!f.isSuccess()) {
+            p.tryFailure(f.cause())
+          }
+        }
+      })
+      p.future
     }
   }
 
   def connect() = {
-    channel.map { ch =>
-      ch.closeFuture.addListener(new ChannelFutureListener {
-        def operationComplete(f: ChannelFuture) = {
-          _closed = true
-        }
-      })
-    }.onFailure {
-      case ex: Throwable => _closed = true
-    }
     channel.flatMap(_ => handshake.future).map(_ => {})
   }
 
@@ -66,7 +58,7 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
 
   lazy val channel = {
     val address = new InetSocketAddress(config.host, config.port)
-    bootstrap().connect(address).asScala
+    bootstrap().connect(address).asScala.map(_.channel)
   }
 
   private def bootstrap() = {
@@ -82,11 +74,11 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
 object ChannelFutures {
   implicit class ChannelFutureSyntax(val f: ChannelFuture) extends AnyVal {
     def asScala = {
-      val p = Promise[Channel]
+      val p = Promise[ChannelFuture]
       f.addListener(new  ChannelFutureListener {
         override def operationComplete(f: ChannelFuture) = {
           if(f.isSuccess()) {
-            p.success(f.channel())
+            p.success(f)
           } else {
             p.failure(f.cause())
           }

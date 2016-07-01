@@ -1,7 +1,7 @@
 package org.srethink.exec
 import java.util.ArrayDeque
 import scala.annotation.tailrec
-import scala.concurrent.{ ExecutionContextExecutor, ExecutionContext }
+import scala.concurrent.{ ExecutionContextExecutor }
 
 /**
  * Copied from playframework

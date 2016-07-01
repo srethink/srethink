@@ -10,5 +10,5 @@ trait Connection {
 
   def connect(): Future[Unit]
 
-  def closed(): Boolean
+  def closed(): Future[Boolean]
 }
