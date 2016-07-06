@@ -53,7 +53,7 @@ object circe {
     }
 
     private def isReqlDate(j: Json) = {
-      j.asObject.fold(false)(obj => obj("$reql_type$") == Some("TIME"))
+      j.asObject.fold(false)(obj => obj("$reql_type$") == Some(Json.fromString("TIME")))
     }
 
     private def isDate(j: Json, fmt: String) = {

@@ -17,7 +17,7 @@ trait SelectingData {
     id: Long,
     price: Long,
     author: String
-  )
+ )
 
 
   val book1 = Book(1L, 1L, "foo")

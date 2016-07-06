@@ -29,7 +29,7 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
   override def channelRead(ctx: ChannelHandlerContext, msg: AnyRef) = {
     msg match {
       case "SUCCESS" =>
-        logger.info("Handshake finished")
+        logger.info(s"Connected to ${config.host}:${config.port}")
         handshake.tryComplete(Success(true))
       case err: String =>
         logger.info("handshake failure")
@@ -44,11 +44,12 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    ctx.close()
+    logger.warn("Uncaught exception, make all pending request fail", cause)
     makeFail(cause)
+    ctx.close()
   }
   private def makeFail(cause: Throwable) = {
-    val removed = for {
+    for {
       (k, v) <- registry if !v.isCompleted
     } v.tryFailure(cause)
   }
