@@ -49,10 +49,12 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   }
 
   def connect() = {
+    logger.info("Open connection to ${config.host}:${config.port}")
     channel.flatMap(_ => handshake.future).map(_ => {})
   }
 
   def close() = {
+    logger.info("Close connection to ${config.host}:${config.port}")
     channel.flatMap(_.close().asScala).map(_ => {})
   }
 
