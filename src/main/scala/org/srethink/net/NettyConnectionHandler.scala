@@ -21,8 +21,8 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
   private val logger = context.logger
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
-    logger.info("Channel active, send handshake...")
     val h = Handshake(config.magic, config.authKey, config.protocol)
+    logger.info(s"Channel ${ctx.channel}  active, send handshake message: ${h}")
     ctx.channel.writeAndFlush(h)
   }
 
@@ -33,7 +33,10 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
         handshake.tryComplete(Success(true))
       case err: String =>
         logger.info("handshake failure")
-        handshake.tryFailure(new Exception(err))
+        val ex = new Exception(err)
+        handshake.tryFailure(ex)
+        makeFail(ex)
+        ctx.close()
       case m: Message =>
         if(logger.isDebugEnabled) {
           logger.debug(s"Receiving message $msg")

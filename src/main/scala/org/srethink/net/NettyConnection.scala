@@ -48,19 +48,26 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
     }
   }
 
+  lazy val connectFuture = {
+    val address = new InetSocketAddress(config.host, config.port)
+    bootstrap().connect(address)
+  }
+
   def connect() = {
-    logger.info("Open connection to ${config.host}:${config.port}")
-    channel.flatMap(_ => handshake.future).map(_ => {})
+    logger.info(s"Open connection to ${config.host}:${config.port}")
+    connectFuture
+    connectFuture.awaitUninterruptibly()
   }
 
   def close() = {
-    logger.info("Close connection to ${config.host}:${config.port}")
-    channel.flatMap(_.close().asScala).map(_ => {})
+    connectFuture.channel.close().awaitUninterruptibly
   }
 
   lazy val channel = {
-    val address = new InetSocketAddress(config.host, config.port)
-    bootstrap().connect(address).asScala.map(_.channel)
+    for {
+      cf <- connectFuture.asScala
+      _ <- handshake.future
+    } yield cf.channel
   }
 
   private def bootstrap() = {

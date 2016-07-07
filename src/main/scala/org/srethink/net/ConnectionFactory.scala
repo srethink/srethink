@@ -14,10 +14,10 @@ trait ConnectionFactory {
 class AutoReconnectConnectionFactory(val config: NettyConnectionConfig) extends ConnectionFactory {
 
   val logger = LoggerFactory.getLogger(classOf[AutoReconnectConnectionFactory])
-  val connRef = new AtomicReference(newConnection)
+  lazy val connRef = new AtomicReference(newConnection)
   implicit val ec = org.srethink.exec.trampoline
 
-  def newConnection = {
+  def newConnection: NettyConnection = {
     val conn = new NettyConnection(config)
     conn.connect()
     conn

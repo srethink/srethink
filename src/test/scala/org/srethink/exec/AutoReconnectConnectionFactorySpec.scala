@@ -9,7 +9,7 @@ class AutoReconnectConnectionFactorySpec extends AsyncFlatSpec with Matchers {
     for {
       conn1 <- factory.get
       _ <- conn1.closed
-      _ <- conn1.close()
+      _ = conn1.close()
       conn2 <- factory.get()
       isConn2Closed <- conn2.closed
     } yield {

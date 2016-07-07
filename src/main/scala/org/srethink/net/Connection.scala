@@ -6,9 +6,9 @@ trait Connection {
 
   def execute(message: Message): Future[Message]
 
-  def close(): Future[Unit]
+  def close(): Unit
 
-  def connect(): Future[Unit]
+  def connect(): Unit
 
   def closed(): Future[Boolean]
 }

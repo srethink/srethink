@@ -13,7 +13,8 @@ class NettyConnectionSpec extends AsyncFlatSpec with Matchers with Assertions wi
   val query = Message(1, "[1, 59]")
 
   "netty connection" should "ok to connect multi-times" in {
-    conn.connect().map(_ => succeed)
+    conn.connect()
+    succeed
   }
 
   it should "send query then receive response" in {
