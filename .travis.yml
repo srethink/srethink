@@ -6,18 +6,14 @@ before_install:
   - sudo apt-get update
 
 install:
-  - sudo apt-get install --force-yes rethinkdb 
+  - sudo apt-get install --force-yes rethinkdb
 
 before_script:
   - sudo cp /etc/rethinkdb/default.conf.sample /etc/rethinkdb/instances.d/default.conf
   - sudo /etc/init.d/rethinkdb start
-  
-scala:
-  - 2.11.1
-  
+
 jdk:
-  - openjdk6
+  - openjdk8
 
 script:
-  - sbt coveralls
-  - sbt +test
+  - sbt test
