@@ -34,6 +34,9 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   def closed = channel.map(!_.isOpen)
 
   def execute(m: Message): Future[Message] = {
+    if(logger.isDebugEnabled) {
+      logger.debug(s"[NettyConnection-execute] Sending message ${m.body}")
+    }
     channel.flatMap { c =>
       val p = Promise[Message]
       registry.put(m.token, p)

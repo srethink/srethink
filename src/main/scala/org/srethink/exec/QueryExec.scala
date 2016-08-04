@@ -46,7 +46,7 @@ class QueryExec(val config: ExecConfig) {
       rs <- implicitly[Decoder[QueryResult]].decodeJson(decoded)
       r <- decodeResult(rs)
     } yield r
-    decodeR.fold(e => Future.failed(ParsingFailure(body, e)), Future.successful(_))
+    decodeR.fold(e => Future.failed(new Exception(s"Response: $body" ,e)), Future.successful(_))
   }
 
   private def decodeResult[T: Decoder](r: QueryResult) = {
