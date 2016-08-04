@@ -36,6 +36,25 @@ scalacOptions ++= Seq(
   "-language:reflectiveCalls"
 )
 
+seq(bintraySettings:_*)
+
+ScoverageKeys.minimumCoverage := 80
+
+ScoverageKeys.failOnMinimumCoverage := true
+
+ScoverageKeys.highlighting := {
+  if (scalaBinaryVersion.value == "2.10") false
+  else false
+}
+
 publishArtifact in Test := false
 
 parallelExecution in Global := false
+
+instrumentSettings
+
+coverallsSettings
+
+ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
+
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
