@@ -17,7 +17,7 @@ libraryDependencies ++= {
     "io.netty"          % "netty-transport"     % nettyV,
     "io.netty"          % "netty-codec"         % nettyV,
     "io.netty"          % "netty-handler"       % nettyV,
-    "org.scalatest"     %% "scalatest"          % "3.0.0-RC1" % "test",
+    "org.scalatest"     %% "scalatest"          % "3.0.0"      % "test",
     "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
 }
 
