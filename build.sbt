@@ -2,8 +2,6 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.1.9"
-
 scalaVersion := "2.11.8"
 
 libraryDependencies ++= {

@@ -33,11 +33,11 @@ class QueryExec(val config: ExecConfig) {
     execute(Helper.startQuery(json))
   }
 
+  def run(action: Action) = query(action.term).flatMap(decodeAsFuture[Json]).map(_.head)
+
   def run[T: Decoder](ast: Sequence) = query(ast.term).flatMap(decodeAsFuture[T])
 
   def run[T: Decoder](ast: Atom) = query(ast.term).flatMap(decodeAsFuture[T]).map(_.head)
-
-  def run(action: Action) = query(action.term).flatMap(decodeAsFuture[Json])
 
   private def decodeAsFuture[T: Decoder](body: String) = {
     val decodeR = for {

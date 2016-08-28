@@ -58,7 +58,6 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
 
   def connect() = {
     logger.info(s"Open connection to ${config.host}:${config.port}")
-    connectFuture
     connectFuture.awaitUninterruptibly()
   }
 
