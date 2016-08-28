@@ -53,7 +53,13 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
 
   lazy val connectFuture = {
     val address = new InetSocketAddress(config.host, config.port)
-    bootstrap().connect(address)
+    val future = bootstrap().connect(address)
+    future.asScala.map { ch =>
+      val h = Handshake(config.magic, config.authKey, config.protocol)
+      logger.info(s"Channel ${ch.channel} active, send handshake message: ${h}")
+      ch.channel.writeAndFlush(h)
+    }
+    future
   }
 
   def connect() = {

@@ -39,3 +39,5 @@ publishArtifact in Test := false
 parallelExecution in Global := false
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+fork in test := true

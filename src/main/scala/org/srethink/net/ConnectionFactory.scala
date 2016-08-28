@@ -14,7 +14,7 @@ trait ConnectionFactory {
 class AutoReconnectConnectionFactory(val config: NettyConnectionConfig) extends ConnectionFactory {
 
   val logger = LoggerFactory.getLogger(classOf[AutoReconnectConnectionFactory])
-  lazy val connRef = new AtomicReference[NettyConnection]()
+  val connRef = new AtomicReference[NettyConnection]()
   implicit val ec = org.srethink.exec.trampoline
 
 
@@ -39,9 +39,11 @@ class AutoReconnectConnectionFactory(val config: NettyConnectionConfig) extends 
 
 
   private def putNewConn(curr: NettyConnection) = {
+    logger.info(s"${System.identityHashCode(this)} -- Creating new connection...")
     val newConn = new NettyConnection(config)
     if(connRef.compareAndSet(curr,  newConn)) {
       newConn.connect()
+      logger.info(s"${System.identityHashCode(this)} -- Created new connection")
       newConn
     } else connRef.get()
   }
