@@ -31,7 +31,7 @@ class NettyConnection(val config: NettyConnectionConfig) extends Connection {
   private val logger = LoggerFactory.getLogger(classOf[NettyConnection])
   private val context = HandlerContext(config, registry, handshake, logger)
   private implicit val ec = org.srethink.exec.trampoline
-  def closed = channel.map(!_.isOpen)
+  def closed = channel.map(!_.isActive)
 
   def execute(m: Message): Future[Message] = {
     if(logger.isDebugEnabled) {

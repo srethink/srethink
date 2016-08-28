@@ -14,34 +14,33 @@ trait ConnectionFactory {
 class AutoReconnectConnectionFactory(val config: NettyConnectionConfig) extends ConnectionFactory {
 
   val logger = LoggerFactory.getLogger(classOf[AutoReconnectConnectionFactory])
-  lazy val connRef = new AtomicReference(newConnection)
+  lazy val connRef = new AtomicReference[NettyConnection]()
   implicit val ec = org.srethink.exec.trampoline
 
-  def newConnection: NettyConnection = {
-    val conn = new NettyConnection(config)
-    conn.connect()
-    conn
-  }
 
   def get() = {
     logger.debug("[Look up connections]")
     val curr = connRef.get()
-    curr.closed.map {
-      case true =>
-        logger.info("Detected closed connection...")
-        putNewConn(curr, connRef)
-      case false =>
-        logger.debug("Offer active connection {}", curr)
-        curr
-    }.recover {
-      case _: Throwable => putNewConn(curr, connRef)
+    if(curr == null) {
+      Future.successful(putNewConn(null))
+    } else {
+      curr.closed.map {
+        case true =>
+          logger.info("Detected closed connection...")
+          putNewConn(curr)
+        case false =>
+          logger.debug("Offer active connection {}", curr)
+          curr
+      }.recover {
+        case _: Throwable => putNewConn(curr)
+      }
     }
   }
 
-  private def putNewConn(curr: NettyConnection, ref: AtomicReference[NettyConnection]) = {
+
+  private def putNewConn(curr: NettyConnection) = {
     val newConn = new NettyConnection(config)
     if(connRef.compareAndSet(curr,  newConn)) {
-      logger.info("Create new connection...")
       newConn.connect()
       newConn
     } else connRef.get()
