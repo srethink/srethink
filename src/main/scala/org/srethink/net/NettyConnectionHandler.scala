@@ -20,6 +20,19 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
   private val handshake = context.handshake
   private val logger = context.logger
 
+  override def channelActive(ctx: ChannelHandlerContext) = {
+    val ch = ctx.channel
+    val h = Handshake(config.magic, config.authKey, config.protocol)
+    logger.info(s"Channel ${ch} active, send handshake message: ${h}")
+    ch.writeAndFlush(h)
+  }
+
+  override def channelInactive(ctx: ChannelHandlerContext) = {
+    val ch = ctx.channel
+    logger.info(s"${ch} become inactive close it")
+    ch.close()
+  }
+
   override def channelRead(ctx: ChannelHandlerContext, msg: AnyRef) = {
     msg match {
       case "SUCCESS" =>
