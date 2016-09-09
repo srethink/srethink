@@ -2,8 +2,8 @@ package org.srethink.util
 
 import io.circe._
 import cats.free.Trampoline
-import cats.std.function._
-import cats.std.list._
+import cats.instances.function._
+import cats.instances.list._
 import cats.syntax.traverse._
 import org.srethink.ast._
 import scala.util.Try

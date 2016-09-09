@@ -3,7 +3,7 @@ package org.srethink.exec
 import cats.data.Xor
 import cats.syntax.traverse._
 import io.circe._
-import cats.std.list._
+import cats.instances.list._
 import io.circe.parser._
 import io.circe.generic.auto._
 import java.util.concurrent.atomic.AtomicLong
