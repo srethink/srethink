@@ -27,6 +27,16 @@ trait Sequence extends Ast {
       def term = t
     }
   }
+
+  def limit(size: Long) = {
+    val t = Helper.term(TermType.LIMIT, Seq(this.term, Json.fromLong(size)))
+    Sequence(t)
+  }
+
+  def skip(size: Long) = {
+    val t = Helper.term(TermType.SKIP, Seq(this.term, Json.fromLong(size)))
+    Sequence(t)
+  }
 }
 
 object Sequence {
