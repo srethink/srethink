@@ -1,10 +1,7 @@
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.99.5.1")
+resolvers += "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("org.scoverage" %% "sbt-coveralls" % "0.98.0")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
 
-resolvers += Resolver.url(
-  "bintray-sbt-plugin-releases",
-  url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
-  Resolver.ivyStylePatterns)
+addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
 
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.2.1")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.2")

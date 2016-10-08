@@ -2,29 +2,30 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.16"
+scalaVersion := "2.11.8"
 
-scalaVersion := "2.11.7"
-
-crossScalaVersions := Seq("2.10.4", "2.11.7")
-
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
-libraryDependencies <<= scalaVersion{ scalaVersion =>
-  val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
-  val playV = "2.4.2"
-  val nettyV = "3.9.3.Final"
+libraryDependencies ++= {
+  val nettyV = "4.0.37.Final"
+  val circeV = "0.5.1"
   Seq(
-    "io.netty"          % "netty"         % nettyV,
-    "org.scala-lang"    % "scala-compiler"% scalaVersion,
-    "com.typesafe.play" %% "play-json"    % playV % "provided",
-    "org.slf4j"         % "slf4j-api"     % "1.7.7" % "provided",
-    "org.specs2"        %% "specs2"       % "2.3.13" % "test",
-    "org.slf4j"         % "slf4j-simple"  % "1.7.7" % "test"
-  )
+    "org.typelevel"     %% "cats"               % "0.7.2",
+    "io.circe"          %% "circe-core"         % circeV,
+    "io.circe"          %% "circe-generic"      % circeV,
+    "io.circe"          %% "circe-parser"       % circeV,
+    "org.slf4j"         % "slf4j-api"           % "1.7.21",
+    "io.netty"          % "netty-transport"     % nettyV,
+    "io.netty"          % "netty-codec"         % nettyV,
+    "io.netty"          % "netty-handler"       % nettyV,
+    "org.scalatest"     %% "scalatest"          % "3.0.0"      % "test",
+    "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
 }
 
 scalacOptions ++= Seq(
+  "-Ywarn-unused-import",
+  "-Ybackend:GenBCode",
+  "-Xfuture",
+  "-Ywarn-dead-code",
+  "-Ydelambdafy:method",
   "-feature",
   "-deprecation",
   "-language:implicitConversions",
@@ -34,25 +35,10 @@ scalacOptions ++= Seq(
   "-language:reflectiveCalls"
 )
 
-seq(bintraySettings:_*)
-
-ScoverageKeys.minimumCoverage := 80
-
-ScoverageKeys.failOnMinimumCoverage := true
-
-ScoverageKeys.highlighting := {
-  if (scalaBinaryVersion.value == "2.10") false
-  else false
-}
-
 publishArtifact in Test := false
 
 parallelExecution in Global := false
 
-instrumentSettings
-
-coverallsSettings
-
-ScoverageKeys.excludedPackages in ScoverageCompile := "srethink\\.protocol\\..*"
-
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+fork in test := true
