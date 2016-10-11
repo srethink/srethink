@@ -1,6 +1,7 @@
 package org.srethink.ast
 
 import io.circe._
+import io.circe.syntax._
 import org.srethink.net._
 
 trait Sequence extends Ast {
@@ -36,6 +37,10 @@ trait Sequence extends Ast {
   def skip(size: Long) = {
     val t = Helper.term(TermType.SKIP, Seq(this.term, Json.fromLong(size)))
     Sequence(t)
+  }
+
+  def update[V: Encoder](v: V) = {
+    Update(this, v.asJson)
   }
 }
 

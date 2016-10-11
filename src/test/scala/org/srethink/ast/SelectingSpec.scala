@@ -16,13 +16,14 @@ trait SelectingData {
   case class Book(
     id: Long,
     price: Long,
-    author: String
+    author: String,
+    tags: Seq[String]
  )
 
 
-  val book1 = Book(1L, 1L, "foo")
-  val book2 = Book(2L, 2L, "bar")
-  val book3 = Book(3L, 3L, "baz")
+  val book1 = Book(1L, 1L, "foo", Seq("foo"))
+  val book2 = Book(2L, 2L, "bar", Seq("bar"))
+  val book3 = Book(3L, 3L, "baz", Seq("baz"))
 
 
 }
