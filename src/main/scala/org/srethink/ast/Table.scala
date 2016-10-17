@@ -16,16 +16,16 @@ case class Table(db: DB, name: String, options: Seq[Opt]) extends Sequence {
 
   def getAll[K: Encoder](keys: Seq[K], options: Opt*) = GetAll(this, keys.map(_.asJson.encodeArray()), options)
 
-  def insert[V: Encoder](vs: V*) = Insert(this, vs.map(_.asJson.encodeArray()))
+  def insert[V: Encoder](vs: V*) = Insert(this, vs.map(_.asJson))
 
 }
 
 case class Insert(table: Table, values: Seq[Json]) extends Action {
-  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values)))
+  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values.map(_.encodeArray().encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")))))
 }
 
 case class Update(parent: Ast, fields: Json) extends Action {
-  def term = Helper.term(TermType.UPDATE, Seq(parent.term, fields.encodeArray()))
+  def term = Helper.term(TermType.UPDATE, Seq(parent.term, fields.encodeArray().encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")))
 }
 
 case class Get(table: Table, key: Json) extends Atom {
