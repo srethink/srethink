@@ -1,6 +1,6 @@
 package org.srethink.ast
 
-import cats.data.Xor
+import cats.syntax.either._
 import io.circe.generic.auto._
 
 class UpdateSpec extends SelectingSpec {
@@ -8,7 +8,7 @@ class UpdateSpec extends SelectingSpec {
   "Update" should "update single item" in {
     val action = books.get(1).update(UpdateBook(Seq("foo", "bar")))
     rdb.run(action).map { json =>
-      json.hcursor.downField("replaced").as[Int] shouldEqual(Xor.right(1))
+      json.hcursor.downField("replaced").as[Int] shouldEqual(Either.right(1))
       succeed
     }
   }
@@ -16,7 +16,7 @@ class UpdateSpec extends SelectingSpec {
   it should "update multi items" in {
     val action = books.update(UpdateBook(Seq("bar", "baz")))
     rdb.run(action).map { j =>
-      j.hcursor.downField("replaced").as[Int] shouldEqual Xor.right(3)
+      j.hcursor.downField("replaced").as[Int] shouldEqual Either.right(3)
     }
   }
 }

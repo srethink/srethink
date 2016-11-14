@@ -1,6 +1,6 @@
 package org.srethink.ast
 
-import cats.data.Xor
+import cats.syntax.either._
 import io.circe._
 import io.circe.generic.auto._
 import java.util.Date
@@ -34,7 +34,7 @@ trait SelectingData {
   implicit val decoder: Decoder[Date] = new Decoder[Date] {
     def apply(d: HCursor) = {
       val sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-      d.as[String].flatMap(str => Xor.catchNonFatal(sdf.parse(str)).leftMap(e => DecodingFailure(e.getMessage, d.history)))
+      d.as[String].flatMap(str => Either.catchNonFatal(sdf.parse(str)).leftMap(e => DecodingFailure(e.getMessage, d.history)))
     }
   }
   val book1 = Book(1L, 1L, "foo", Seq("foo"))
