@@ -21,11 +21,16 @@ case class Table(db: DB, name: String, options: Seq[Opt]) extends Sequence {
 }
 
 case class Insert(table: Table, values: Seq[Json]) extends Action {
-  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values)))
+  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values.map(_.encodeArray().encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")))))
+}
+
+case class Update(parent: Ast, fields: Json) extends Action {
+  def term = Helper.term(TermType.UPDATE, Seq(parent.term, fields.encodeArray().encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")))
 }
 
 case class Get(table: Table, key: Json) extends Atom {
   def term = Helper.term(TermType.GET, Seq(table.term, key))
+  def update[V: Encoder](v: V) = Update(this, v.asJson)
 }
 case class GetAll(table: Table, keys: Seq[Json], opts: Seq[Opt]) extends Sequence {
   def term = Helper.term(TermType.GET_ALL, table.term +: keys, opts.map(_.pair))
