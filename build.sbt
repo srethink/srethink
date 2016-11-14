@@ -6,9 +6,9 @@ scalaVersion := "2.11.8"
 
 libraryDependencies ++= {
   val nettyV = "4.0.37.Final"
-  val circeV = "0.5.1"
+  val circeV = "0.6.0"
   Seq(
-    "org.typelevel"     %% "cats"               % "0.7.2",
+    "org.typelevel"     %% "cats"               % "0.8.1",
     "io.circe"          %% "circe-core"         % circeV,
     "io.circe"          %% "circe-generic"      % circeV,
     "io.circe"          %% "circe-parser"       % circeV,

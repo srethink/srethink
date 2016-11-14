@@ -1,9 +1,10 @@
 package org.srethink.exec
 
-import cats.data.Xor
+import cats.syntax.either._
 import cats.syntax.traverse._
 import io.circe._
 import cats.instances.list._
+import cats.instances.either._
 import io.circe.parser._
 import io.circe.generic.auto._
 import java.util.concurrent.atomic.AtomicLong
@@ -42,9 +43,9 @@ class QueryExec(val config: ExecConfig) {
 
   private def decodeAsFuture[T: Decoder](body: String) = {
     val decodeR = for {
-      j <- parse(body)
+      j <- parse(body): Either[Throwable, Json]
       decoded = j.decodeDates(config.dateTimeFormat)
-      rs <- implicitly[Decoder[QueryResult]].decodeJson(decoded)
+      rs <- implicitly[Decoder[QueryResult]].decodeJson(decoded): Either[Throwable, QueryResult]
       r <- decodeResult(rs)
     } yield r
     decodeR.fold(e => Future.failed(new Exception(s"Response: $body" ,e)), Future.successful(_))
@@ -56,7 +57,7 @@ class QueryExec(val config: ExecConfig) {
       || r.t == ResponseType.SUCCESS_SEQUENCE) {
       r.r.traverse(implicitly[Decoder[T]].decodeJson(_))
     } else {
-      Xor.Left(new Exception(r.b.getOrElse("unknow error")))
+      Left(new Exception(r.b.getOrElse("unknow error")))
     }
   }
 }
