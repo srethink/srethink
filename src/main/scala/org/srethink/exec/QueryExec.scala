@@ -53,11 +53,11 @@ class QueryExec(val config: ExecConfig) {
 
   private def decodeResult[T: Decoder](r: QueryResult) = {
     if(r.t == ResponseType.SUCCESS_ATOM
-      || r.t == ResponseType.SUCCESS_SEQUENCE
+      || r.t == ResponseType.SUCCESS_PARTIAL
       || r.t == ResponseType.SUCCESS_SEQUENCE) {
       r.r.traverse(implicitly[Decoder[T]].decodeJson(_))
     } else {
-      Left(new Exception(r.b.getOrElse("unknow error")))
+      Left(new Exception(s"Uknown response type ${r.t}"))
     }
   }
 }
