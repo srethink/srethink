@@ -4,6 +4,15 @@ import io.circe._
 import io.circe.syntax._
 import org.srethink.net._
 
+case class Order(field: String, asc: Boolean, opts: Opt*) extends Ast {
+  val termType = if(asc) TermType.ASC else TermType.DESC
+  def term = Helper.term(
+    termType,
+    Seq(Json.fromString(field)),
+    opts.map(_.pair)
+  )
+}
+
 trait Sequence extends Ast {
   def filter(func: Var => Datum[Boolean], opts: Opt*) = {
     val t = Helper.term(
@@ -41,6 +50,14 @@ trait Sequence extends Ast {
 
   def update[V: Encoder](v: V) = {
     Update(this, v.asJson)
+  }
+
+  def orderBy(order: Order) = {
+    val t = Helper.term(
+      TermType.ORDER_BY,
+      Seq(this.term, order.term)
+    )
+    Sequence(t)
   }
 }
 

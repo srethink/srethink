@@ -52,12 +52,13 @@ class QueryExec(val config: ExecConfig) {
   }
 
   private def decodeResult[T: Decoder](r: QueryResult) = {
-    if(r.t == ResponseType.SUCCESS_ATOM
-      || r.t == ResponseType.SUCCESS_PARTIAL
-      || r.t == ResponseType.SUCCESS_SEQUENCE) {
-      r.r.traverse(implicitly[Decoder[T]].decodeJson(_))
-    } else {
-      Left(new Exception(s"Uknown response type ${r.t}"))
+    (r.r, r.t) match {
+      case (List(json), ResponseType.SUCCESS_ATOM) if json.isArray =>
+        json.asArray.get.traverse(implicitly[Decoder[T]].decodeJson(_))
+      case (_, ResponseType.SUCCESS_ATOM|ResponseType.SUCCESS_SEQUENCE | ResponseType.SUCCESS_PARTIAL) =>
+        r.r.traverse(implicitly[Decoder[T]].decodeJson(_))
+      case _ =>
+        Left(new Exception(s"Uknown response type ${r.t}"))
     }
   }
 }

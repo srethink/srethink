@@ -20,6 +20,8 @@ trait Global {
     )
   }
 
+
+
   def epoch(time: Long) = new Ast {
     def term = Helper.term(TermType.EPOCH_TIME, Seq(Json.fromBigDecimal(BigDecimal(time) / 1000)))
   }
@@ -27,5 +29,9 @@ trait Global {
   def now() = epoch(System.currentTimeMillis)
 
   def opt[E: Encoder](name: String, value: E) = Opt(name, value.asJson)
+
+  def asc(field: String, opts: Opt*) = Order(field, true, opts: _*)
+
+  def desc(field: String, opts: Opt*) = Order(field, false, opts: _*)
 
 }
