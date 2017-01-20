@@ -2,23 +2,21 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.16"
+version := "0.0.17"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
-crossScalaVersions := Seq("2.10.4", "2.11.7")
+crossScalaVersions := Seq("2.11.8")
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies <<= scalaVersion{ scalaVersion =>
-  val Some(majorV) = CrossVersion.partialVersion(scalaVersion)
-  val playV = "2.4.2"
-  val nettyV = "3.9.3.Final"
+libraryDependencies ++= {
+  val playV = "2.5.10"
+  val nettyV = "3.10.6.Final"
   Seq(
     "io.netty"          % "netty"         % nettyV,
-    "org.scala-lang"    % "scala-compiler"% scalaVersion,
     "com.typesafe.play" %% "play-json"    % playV % "provided",
-    "org.slf4j"         % "slf4j-api"     % "1.7.7" % "provided",
+    "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
     "org.specs2"        %% "specs2"       % "2.3.13" % "test",
     "org.slf4j"         % "slf4j-simple"  % "1.7.7" % "test"
   )
