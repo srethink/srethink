@@ -13,10 +13,10 @@ before_script:
   - sudo /etc/init.d/rethinkdb start
   
 scala:
-  - 2.11.1
+  - 2.11.8
   
 jdk:
-  - openjdk6
+  - openjdk8
 
 script:
   - sbt coveralls
