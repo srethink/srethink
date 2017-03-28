@@ -3,7 +3,7 @@ package org.srethink.util
 import io.circe._
 import cats.free.Trampoline
 import cats.instances.function._
-import cats.instances.list._
+import cats.instances.vector._
 import cats.syntax.traverse._
 import org.srethink.ast._
 import scala.util.Try

@@ -3,7 +3,7 @@ package org.srethink.exec
 import cats.syntax.either._
 import cats.syntax.traverse._
 import io.circe._
-import cats.instances.list._
+import cats.instances.vector._
 import cats.instances.either._
 import io.circe.parser._
 import io.circe.generic.auto._
@@ -14,7 +14,7 @@ import org.srethink.util.circe._
 
 import scala.concurrent.Future
 
-case class QueryResult(t: Int, r: List[Json], b: Option[String])
+case class QueryResult(t: Int, r: Vector[Json], b: Option[String])
 
 case class ExecConfig(
   connectionFactory: ConnectionFactory,
@@ -53,7 +53,7 @@ class QueryExec(val config: ExecConfig) {
 
   private def decodeResult[T: Decoder](r: QueryResult) = {
     (r.r, r.t) match {
-      case (List(json), ResponseType.SUCCESS_ATOM) if json.isArray =>
+      case (Vector(json), ResponseType.SUCCESS_ATOM) if json.isArray =>
         json.asArray.get.traverse(implicitly[Decoder[T]].decodeJson(_))
       case (_, ResponseType.SUCCESS_ATOM|ResponseType.SUCCESS_SEQUENCE | ResponseType.SUCCESS_PARTIAL) =>
         r.r.traverse(implicitly[Decoder[T]].decodeJson(_))
