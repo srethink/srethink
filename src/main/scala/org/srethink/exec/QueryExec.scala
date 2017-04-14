@@ -26,7 +26,7 @@ class QueryExec(val config: ExecConfig) {
   implicit val ec = trampoline
 
   def execute(json: Json) = {
-    val msg = json.pretty(Printer.noSpaces.copy(dropNullKeys = true))
+    val msg = json.noSpaces
     val m = Message(tg.incrementAndGet(), msg)
     config.connectionFactory.get().flatMap(_.execute(m).map(_.body))
   }
