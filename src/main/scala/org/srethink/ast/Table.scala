@@ -21,7 +21,17 @@ case class Table(db: DB, name: String, options: Seq[Opt]) extends Sequence {
 }
 
 case class Insert(table: Table, values: Seq[Json]) extends Action {
-  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values.map(_.encodeArray().encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")))))
+  private def normalize(j: Json) = {
+    j.encodeArray()
+      .encodeDates("yyyy-MM-dd HH:mm:ss", "+0800")
+      .mapObject(
+        _.filter {
+          case ("id", j) if j.isNull => false
+          case _ => true
+        }
+      )
+  }
+  def term = Helper.term(TermType.INSERT, Seq(table.term, Helper.makeArray(values.map(normalize))))
 }
 
 case class Update(parent: Ast, fields: Json) extends Action {
