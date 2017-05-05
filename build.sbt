@@ -15,6 +15,7 @@ libraryDependencies ++= {
   val nettyV = "3.10.6.Final"
   Seq(
     "io.netty"          % "netty"         % nettyV,
+    "co.fs2"            %% "fs2-core"     % "0.9.5",
     "com.typesafe.play" %% "play-json"    % playV % "provided",
     "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
     "org.specs2"        %% "specs2"       % "2.3.13" % "test",
