@@ -21,7 +21,7 @@ trait QueryExecutor {
     start(c, t, query)
   }
 
-  private def start(c: Connection, token: Long, query: String): Future[Response] = {
+  final def start(c: Connection, token: Long, query: String): Future[Response] = {
     val c = factory.acquire()
     c.query(Query(token, query))
   }
@@ -30,10 +30,8 @@ trait QueryExecutor {
     c.query(Query(token, query))
   }
 
-  final def cursor(query: String) = {
-    val t = token.incrementAndGet()
-    val c = factory.acquire()
-    Stream.eval(start(c, t, query)) ++ Stream.repeatEval(continue(c, t, query))
+  final def prepare(): (Connection, Long) = {
+    (factory.acquire(), token.incrementAndGet())
   }
 
   final def stop(c: Connection, token: Long, query: String) = {
