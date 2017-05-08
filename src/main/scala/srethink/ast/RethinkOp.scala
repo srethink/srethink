@@ -47,10 +47,9 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[Future, J] = {
     val (c, t) = executor.prepare()
-    val stream = Stream.eval(startQuery(c, t, query)) ++ repeatEvalFuture(continue(c, t)).takeThrough {
+    (Stream.eval(startQuery(c, t, query)) ++ repeatEvalFuture(continue(c, t))).takeThrough {
       case (t, rt, body) => rt == SUCCESS_PARTIAL
-    }
-    stream.flatMap {
+    }.flatMap {
       case (_, rt, body) =>
         val docs = normalizeResult(rt, body)
         if(logger.isInfoEnabled)
