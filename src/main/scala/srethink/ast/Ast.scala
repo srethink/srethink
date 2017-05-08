@@ -3,6 +3,7 @@ package srethink.ast
 import srethink.json._
 import srethink.net._
 import srethink._
+import scala.concurrent.Future
 
 
 trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
@@ -34,6 +35,10 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
 
     def runAs[T: F](implicit executor: QueryExecutor) = {
       decodeR[T](run)
+    }
+
+    def cursor[T: F](implicit executor: QueryExecutor) = {
+      decodeStream[T](execCursor(term))
     }
   }
 

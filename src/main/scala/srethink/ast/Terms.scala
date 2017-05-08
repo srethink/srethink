@@ -20,6 +20,10 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rQuery(START_VALUE, term, optargs)
   }
 
+  def rContinueQuery() = {
+    rQuery(CONTINUE_VALUE)
+  }
+
   def rStopQuery() = {
     rQuery(STOP_VALUE)
   }
