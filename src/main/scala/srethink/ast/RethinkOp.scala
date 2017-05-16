@@ -47,7 +47,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[Future, J] = {
     val (c, t) = executor.prepare()
-    (Stream.eval(startQuery(c, t, query)) ++ repeatEvalFuture(continue(c, t))).takeThrough {
+    val rows = (Stream.eval(startQuery(c, t, query)) ++ repeatEvalFuture(continue(c, t))).takeThrough {
       case (t, rt, body) => rt == SUCCESS_PARTIAL
     }.flatMap {
       case (_, rt, body) =>
@@ -56,6 +56,10 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
           logger.info(s"Getting docs ${rt} -> ${docs.size}")
         Stream.emits(docs)
     }
+    import executor.executionContext
+    Stream.bracket(Future.successful({}))(_ => rows, _ => stop(c, t).map(_ => {}).recover {
+      case ex: Throwable => logger.debug(s"Failed close cursor for token $t")
+    })
   }
 
   private def startQuery(c: Connection, t: Long, query: J)(implicit executor: QueryExecutor) = {
@@ -65,8 +69,12 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   private def continue(c: Connection, t: Long)(implicit executor: QueryExecutor) = {
     import executor.executionContext
-    println(s"cintinue $t")
     executor.start(c, t, stringify(rContinueQuery())).map(rethinkErrorHandler)
+  }
+
+  private def stop(c: Connection, t: Long)(implicit executor: QueryExecutor) = {
+    import executor.executionContext
+    executor.start(c, t, stringify(rStopQuery())).map(rethinkErrorHandler)
   }
 
   protected def exec(query: J)(implicit executor: QueryExecutor): Future[J] = {
