@@ -11,7 +11,7 @@ crossScalaVersions := Seq("2.11.8")
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= {
-  val playV = "2.4.10"
+  val playV = "2.5.12"
   val nettyV = "3.10.6.Final"
   Seq(
     "io.netty"          % "netty"         % nettyV,
