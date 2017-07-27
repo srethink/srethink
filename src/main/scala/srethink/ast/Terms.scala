@@ -206,6 +206,14 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(ORDERBY_VALUE, Seq(term), order)
   }
 
+  def rOr(left: J, right: J) = {
+    rTerm(OR_VALUE, Seq(left, right))
+  }
+
+  def rAnd(left: J, right: J) = {
+    rTerm(AND_VALUE, Seq(left, right))
+  }
+
   def rDesc(field: String) = {
     rTerm(DESC_VALUE, Seq(field))
   }

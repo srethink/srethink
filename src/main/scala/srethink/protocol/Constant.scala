@@ -59,6 +59,8 @@ object TermConstant {
   val MUL_VALUE = 26
   val DIV_VALUE = 27
   val MOD_VALUE = 28
+  val AND_VALUE = 67
+  val OR_VALUE = 66
   val APPEND_VALUE = 29
   val PREPEND_VALUE = 80
   val DIFFERENCE_VALUE = 95

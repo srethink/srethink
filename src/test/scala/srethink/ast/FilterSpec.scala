@@ -21,5 +21,8 @@ class FilterSpec extends RethinkSpec with WithData {
     "filter doc with id < 2" in {
       testQuery[Seq[Book]](b1, b2, b3)(books.filter(_.seq < 2))(_.size == 1)
     }
+    "filter doc with id in 2 or 3" in {
+      testQuery[Seq[Book]](b1, b2, b3)(books.filter(b => b.seq === 2 || b.seq === 1))(_.size == 2)
+    }
   }
 }

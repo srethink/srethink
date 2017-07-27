@@ -56,6 +56,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     def / (that: Expr) = new Expr(rDiv(term, that.term))
     def === (that: Expr) = new Expr(rEq(term, that.term))
     def =!= (that: Expr) = new Expr(rNe(term, that.term))
+    def || (that: Expr) = new Expr(rOr(term, that.term))
+    def && (that: Expr) = new Expr(rAnd(term, that.term))
     def > (that: Expr) = new Expr(rGt(term, that.term))
     def < (that: Expr) = new Expr(rLt(term, that.term))
     def >= (that: Expr) = new Expr(rGe(term, that.term))
