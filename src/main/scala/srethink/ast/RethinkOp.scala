@@ -102,7 +102,8 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
   def decodeR[T: F](r: Future[J])(implicit executor: QueryExecutor) = {
     import executor.executionContext
     r.map(decode[T]).recoverWith {
-      case _ => r.flatMap { body =>
+      case ex => r.flatMap { body =>
+        logger.info(s"error decode body", ex)
         Future.failed(new RethinkException(s"error parsing body ${stringify(body)}"))
       }
     }

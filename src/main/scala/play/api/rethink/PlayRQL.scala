@@ -1,6 +1,7 @@
 package play.api.rethink
 
 import java.util.Date
+import org.slf4j._
 import play.api.libs.json._
 import play.api.libs.json.Json
 import scala.util.control.TailCalls._
@@ -13,6 +14,8 @@ import srethink._
 
 
 trait PlayRQL extends AstDef[JsValue, Format] with PlayRethinkFormats {
+
+  private val logger = LoggerFactory.getLogger(classOf[PlayRQL])
 
   def jsArray(items: Seq[JsValue]) = new JsArray(items)
   def jsObject(fields: Seq[(String, JsValue)]) = new JsObject(fields.toMap)
@@ -29,7 +32,13 @@ trait PlayRQL extends AstDef[JsValue, Format] with PlayRethinkFormats {
   def stringify(js: JsValue) = Json.stringify(js)
   def parse(js: String) = Json.parse(js)
   def encode[T: Format](t: T) = Json.toJson(t)
-  def decode[T: Format](json: JsValue) = Json.fromJson[T](json).get
+  def decode[T: Format](json: JsValue) = {
+    Json.fromJson[T](json) match {
+      case JsSuccess(v, _) => v
+      case e@JsError(errs) => throw new Exception(e.errors.mkString("\n"))
+
+    }
+  }
 
   def transformArray(j: JsValue): JsValue = transform(j).result
 

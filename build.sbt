@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.20-2.5"
+version := "0.0.21-2.5"
 
 scalaVersion := "2.11.8"
 
@@ -17,9 +17,9 @@ libraryDependencies ++= {
     "io.netty"          % "netty"         % nettyV,
     "co.fs2"            %% "fs2-core"     % "0.9.5",
     "com.typesafe.play" %% "play-json"    % playV % "provided",
-    "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
     "org.specs2"        %% "specs2"       % "2.3.13" % "test",
-    "org.slf4j"         % "slf4j-simple"  % "1.7.7" % "test"
+    "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
+    "org.slf4j"         % "slf4j-simple"  % "1.7.22" % "test"
   )
 }
 
