@@ -17,8 +17,8 @@ object circe {
       } else {
         j.arrayOrObject(
           Trampoline.done(j) ,
-          _.traverse(e => Trampoline.suspend(transform(e, f))).map(Json.fromValues),
-          _.traverse(e => Trampoline.suspend(transform(e, f))).map(Json.fromJsonObject)
+          _.traverse(e => Trampoline.defer(transform(e, f))).map(Json.fromValues),
+          _.traverse(e => Trampoline.defer(transform(e, f))).map(Json.fromJsonObject)
         )
       }
     }
@@ -38,8 +38,8 @@ object circe {
     def encodeArray(): Json = {
       def enc(j: Json): Trampoline[Json] = j.arrayOrObject(
         Trampoline.done(j),
-        _.traverse(e => Trampoline.suspend(enc(e))).map(Helper.makeArray),
-        _.traverse(e => Trampoline.suspend(enc(e))).map(Json.fromJsonObject)
+        _.traverse(e => Trampoline.defer(enc(e))).map(Helper.makeArray),
+        _.traverse(e => Trampoline.defer(enc(e))).map(Json.fromJsonObject)
       )
       enc(json).run
     }
