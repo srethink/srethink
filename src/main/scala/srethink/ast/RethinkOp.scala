@@ -1,7 +1,9 @@
 package srethink.ast
 
 import fs2._
-import fs2.util._
+import cats._
+import cats.effect._
+import cats.syntax.either._
 import scala.concurrent._
 import srethink.json._
 import srethink.net._
@@ -41,13 +43,16 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     }
   }
 
-  private def repeatEvalFuture[A](f: => Future[A]): Stream[Future, A] = {
-    Stream.eval(f) ++ repeatEvalFuture(f)
+  private def repeatEvalFuture[A](f: => Future[A])(implicit executor: QueryExecutor): Stream[IO, A] = {
+    import executor.executionContext
+    Stream.eval(IO.fromFuture(Eval.always(f))).repeat
   }
 
-  protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[Future, J] = {
+  protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[IO, J] = {
+    import executor.executionContext
     val (c, t) = executor.prepare()
-    val rows = (Stream.eval(startQuery(c, t, query)) ++ repeatEvalFuture(continue(c, t))).takeThrough {
+    val start = IO.fromFuture(Eval.later(startQuery(c, t, query)))
+    val rows = (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
       case (t, rt, body) => rt == SUCCESS_PARTIAL
     }.flatMap {
       case (_, rt, body) =>
@@ -55,9 +60,10 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
         Stream.emits(docs)
     }
     import executor.executionContext
-    Stream.bracket(Future.successful({}))(_ => rows, _ => stop(c, t).map(_ => {}).recover {
+    val stopEval = Eval.later(stop(c, t).recover {
       case ex: Throwable => logger.debug(s"Failed close cursor for token $t")
-    })
+    }.map(_ => {}))
+    Stream.bracket(IO.pure({}))(_ => rows, _ => IO.fromFuture(stopEval))
   }
 
   private def startQuery(c: Connection, t: Long, query: J)(implicit executor: QueryExecutor) = {
@@ -109,13 +115,10 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     }
   }
 
-  def decodeStream[T: F](r: Stream[Future, J])(implicit executor: QueryExecutor): Stream[Future, T] = {
+  def decodeStream[T: F](r: Stream[IO, J])(implicit executor: QueryExecutor): Stream[IO, T] = {
     import executor.executionContext
-    r.flatMap { body =>
-     val fut: Future[T] =  Future.fromTry(Try(decode[T](body))).recover {
-        case ex: Throwable =>  throw new RethinkException(s"error parsing body ${stringify(body)}")
-     }
-      Stream.eval(fut)
+    r.evalMap { body =>
+      IO.fromEither(Either.fromTry(Try(decode[T](body))))
     }
   }
 

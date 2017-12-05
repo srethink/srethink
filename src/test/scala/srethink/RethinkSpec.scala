@@ -1,7 +1,7 @@
 package srethink
 
-import fs2.util._
-import scala.concurrent.{Future, ExecutionContext}
+import cats.effect._
+import scala.concurrent.{Future, ExecutionContext, Promise}
 import org.specs2.mutable.Specification
 import org.specs2.specification._
 import play.api.libs.json.{Format, Json, Writes}
@@ -16,14 +16,6 @@ object Executors {
 trait RethinkSpec extends Specification {
   sequential
   implicit val executor: QueryExecutor = Executors.executor
-  protected implicit def futureCatchable = new Catchable[Future]  {
-    def pure[A](a: A) = Future.successful(a)
-    def attempt[A](fa: Future[A]) = fa.map(a => Attempt(a)).recoverWith {
-      case ex: Throwable => Future.successful(Attempt.failure(ex))
-    }
-    def fail[A](err: Throwable): Future[A] = Future.failed(err)
-    def flatMap[A, B](a: Future[A])(f: A => Future[B]) = a.flatMap(f)
-  }
 }
 
 trait RethinkOperatorSpec extends  WithData {
