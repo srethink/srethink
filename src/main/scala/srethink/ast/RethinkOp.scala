@@ -45,7 +45,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   private def repeatEvalFuture[A](f: => Future[A])(implicit executor: QueryExecutor): Stream[IO, A] = {
     import executor.executionContext
-    Stream.eval(IO.fromFuture(IO(f))) ++ repeatEvalFuture(f)
+    Stream.eval(IO.fromFuture(IO(f))).repeat
   }
 
   protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[IO, J] = {
