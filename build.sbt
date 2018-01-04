@@ -5,9 +5,9 @@ name := "srethink"
 scalaVersion := "2.11.11"
 
 libraryDependencies ++= {
-  val nettyV = "4.0.52.Final"
-  val circeV = "0.9.0-M2"
-  val catsV = "1.0.0-RC1"
+  val nettyV = "4.0.54.Final"
+  val circeV = "0.9.0"
+  val catsV = "1.0.1"
   Seq(
     "org.typelevel"     %% "cats-core"          % catsV,
     "org.typelevel"     %% "cats-free"          % catsV,
