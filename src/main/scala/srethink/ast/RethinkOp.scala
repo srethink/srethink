@@ -45,13 +45,13 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
 
   private def repeatEvalFuture[A](f: => Future[A])(implicit executor: QueryExecutor): Stream[IO, A] = {
     import executor.executionContext
-    Stream.eval(IO.fromFuture(Eval.always(f))).repeat
+    Stream.eval(IO.fromFuture(IO(f))) ++ repeatEvalFuture(f)
   }
 
   protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[IO, J] = {
     import executor.executionContext
     val (c, t) = executor.prepare()
-    val start = IO.fromFuture(Eval.later(startQuery(c, t, query)))
+    val start = IO.fromFuture(IO(startQuery(c, t, query)))
     val rows = (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
       case (t, rt, body) => rt == SUCCESS_PARTIAL
     }.flatMap {
@@ -60,7 +60,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
         Stream.emits(docs)
     }
     import executor.executionContext
-    val stopEval = Eval.later(stop(c, t).recover {
+    val stopEval = IO(stop(c, t).recover {
       case ex: Throwable => logger.debug(s"Failed close cursor for token $t")
     }.map(_ => {}))
     Stream.bracket(IO.pure({}))(_ => rows, _ => IO.fromFuture(stopEval))
