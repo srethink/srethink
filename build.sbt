@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.11.12"
 
 libraryDependencies ++= {
   val nettyV = "4.0.54.Final"
@@ -22,7 +22,7 @@ libraryDependencies ++= {
     "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
 }
 
-crossScalaVersions := Seq("2.11.11", "2.12.3")
+crossScalaVersions := Seq("2.11.11", "2.12.4")
 
 scalacOptions ++= compilerOptions(scalaVersion.value)
 
