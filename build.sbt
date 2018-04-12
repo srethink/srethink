@@ -22,7 +22,7 @@ libraryDependencies ++= {
     "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
 }
 
-crossScalaVersions := Seq("2.11.11", "2.12.4")
+crossScalaVersions := Seq("2.11.12", "2.12.4")
 
 scalacOptions ++= compilerOptions(scalaVersion.value)
 
