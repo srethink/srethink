@@ -1,12 +1,15 @@
 package srethink
 
-import fs2.util._
+import cats.syntax.all._
+import cats.instances.future._
+import cats.effect.Sync
 import scala.concurrent.{Future, ExecutionContext}
 import org.specs2.mutable.Specification
 import org.specs2.specification._
 import play.api.libs.json.{Format, Json, Writes}
 import srethink.net._
 import play.api.rql._
+
 
 
 object Executors {
@@ -16,14 +19,6 @@ object Executors {
 trait RethinkSpec extends Specification {
   sequential
   implicit val executor: QueryExecutor = Executors.executor
-  protected implicit def futureCatchable = new Catchable[Future]  {
-    def pure[A](a: A) = Future.successful(a)
-    def attempt[A](fa: Future[A]) = fa.map(a => Attempt(a)).recoverWith {
-      case ex: Throwable => Future.successful(Attempt.failure(ex))
-    }
-    def fail[A](err: Throwable): Future[A] = Future.failed(err)
-    def flatMap[A, B](a: Future[A])(f: A => Future[B]) = a.flatMap(f)
-  }
 }
 
 trait RethinkOperatorSpec extends  WithData {
@@ -101,7 +96,7 @@ trait WithData extends RethinkSpec with BeforeExample  {
       _ <- r.dbCreate("library").runAs[CreateResult].recover{case e => }
       _ <- r.db("library").tableCreate("book").runAs[CreateResult].recover{case e => }
       _ <- r.db("library").table("book").indexCreate("sequence")(_.seq).runAs[CreateResult].recover { case e => }
-      _ <- books.delete().runAs[DropResult]
+      _ <- books.delete().runAs[DropResult].attempt
     } yield true
     Await.ready(fut, duration.Duration.Inf)
   }
