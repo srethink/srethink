@@ -20,7 +20,7 @@ class CursorSpec extends RethinkSpec with WithData {
     "get all rows of table" in {
       (for {
         _ <- insert10000()
-        rs <- books.cursor[Book].runLog.unsafeToFuture
+        rs <- books.cursor[Book].compile.toVector.unsafeToFuture
       } yield rs.size should be_== (10000)).await(100000)
     }
   }
