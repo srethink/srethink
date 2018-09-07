@@ -6,8 +6,8 @@ scalaVersion := "2.11.12"
 
 libraryDependencies ++= {
   val nettyV = "4.0.54.Final"
-  val circeV = "0.9.0"
-  val catsV = "1.0.1"
+  val circeV = "0.9.3"
+  val catsV = "1.3.1"
   Seq(
     "org.typelevel"     %% "cats-core"          % catsV,
     "org.typelevel"     %% "cats-free"          % catsV,
