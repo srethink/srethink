@@ -63,7 +63,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     val stopEval = IO(stop(c, t).recover {
       case ex: Throwable => logger.debug(s"Failed close cursor for token $t")
     }.map(_ => {}))
-    Stream.bracket(IO.pure({}))(_ => rows, _ => IO.fromFuture(stopEval))
+    Stream.bracket(IO.unit) (_ => IO.fromFuture(stopEval)) >> rows
   }
 
   private def startQuery(c: Connection, t: Long, query: J)(implicit executor: QueryExecutor) = {

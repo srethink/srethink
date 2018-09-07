@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.31-2.5"
+version := "0.0.32-2.5"
 
 scalaVersion := "2.11.12"
 
@@ -15,7 +15,7 @@ libraryDependencies ++= {
   val nettyV = "3.10.6.Final"
   Seq(
     "io.netty"          % "netty"         % nettyV,
-    "co.fs2"            %% "fs2-core"     % "0.10.1",
+    "co.fs2"            %% "fs2-core"     % "1.0.0-M5",
     "com.typesafe.play" %% "play-json"    % playV % "provided",
     "org.specs2"        %% "specs2"       % "2.3.13" % "test",
     "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
