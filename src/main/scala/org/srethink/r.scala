@@ -1,5 +1,7 @@
 package org.srethink
 
+import cats.syntax.all._
+import cats.effect._
 import org.srethink.ast._
 import org.srethink.exec._
 import org.srethink.net._
@@ -8,8 +10,10 @@ object r extends Global {
 
   type Config = NettyConnectionConfig
 
-  type RDB = QueryExec
+  type RDB[F[_]] = QueryExec[F]
   type DB = org.srethink.ast.DB
+
+
 
   def db(name: String) = new DB(name)
 
@@ -17,9 +21,16 @@ object r extends Global {
 
   def dbDrop(name: String) = new DBDrop(name)
 
-  def executor(cfg: Config = new NettyConnectionConfig,
+  def executor[F[_]: ConcurrentEffect: Timer](cfg: Config = new NettyConnectionConfig,
     dateTimeFormat: String = "yyyy-MM-dd HH:mm:ss",
-    timezone: String = "+00:00") = new QueryExec(
-    ExecConfig(new AutoReconnectConnectionFactory(cfg), dateTimeFormat, timezone)
-  )
+    timezone: String = "+00:00") = {
+    ConnectionFactory.default[F](16, cfg).map { factory =>
+      val execCfg = new ExecConfig(
+        factory,
+        dateTimeFormat,
+        timezone
+      )
+      new QueryExec(execCfg)
+    }
+  }
 }

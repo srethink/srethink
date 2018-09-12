@@ -6,7 +6,7 @@ import io.netty.handler.codec._
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 
-class NettyConnectionCodec(context: HandlerContext) extends ByteToMessageCodec[Any] {
+class NettyConnectionCodec[F[_]](context: HandlerContext[F]) extends ByteToMessageCodec[Any] {
 
   type Ctx = ChannelHandlerContext
   type Buf = ByteBuf

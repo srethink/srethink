@@ -1,14 +1,11 @@
 package org.srethink.net
 
-import scala.concurrent.Future
 
-trait Connection {
+trait Connection[F[_]] {
 
-  def execute(message: Message): Future[Message]
+  def execute(message: Message): F[Message]
 
-  def close(): Unit
+  def close(): F[Unit]
 
-  def connect(): Unit
-
-  def closed(): Future[Boolean]
+  def closed(): F[Boolean]
 }

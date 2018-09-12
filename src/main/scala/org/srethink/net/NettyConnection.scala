@@ -1,15 +1,17 @@
 package org.srethink.net
 
+import cats.syntax.all._
+import cats.effect._
+import cats.effect.concurrent._
 import io.netty.bootstrap._
 import io.netty.channel._
 import io.netty.channel.nio._
 import io.netty.channel.socket.nio._
 import java.net._
 import java.nio.charset.Charset
-import org.srethink.net.ChannelFutures._
 import org.slf4j._
-import scala.collection.concurrent.TrieMap
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration._
+
 
 case class NettyConnectionConfig(
   host: String = "127.0.0.1",
@@ -24,78 +26,84 @@ case class NettyConnectionConfig(
   charset: Charset = Charset.defaultCharset())
 
 
-class NettyConnection(val config: NettyConnectionConfig) extends Connection {
+class NettyConnection[F[_]](
+  context: HandlerContext[F]
+)(implicit F: ConcurrentEffect[F], T: Timer[F]) extends Connection[F] {
 
-  private val handshake = Promise[Boolean]
-  private val registry = new TrieMap[Long, Promise[Message]]
-  private val logger = LoggerFactory.getLogger(classOf[NettyConnection])
-  private val context = HandlerContext(config, registry, handshake, logger)
-  private implicit val ec = org.srethink.exec.trampoline
-  def closed = channel.map(!_.isActive)
 
-  def execute(m: Message): Future[Message] = {
+  private val logger = LoggerFactory.getLogger(classOf[NettyConnection[F]])
+  private val channel = context.handshake.get *> context.channel.get.rethrow
+
+  def closed = channel.map(_.isActive)
+
+  def execute(m: Message): F[Message] = {
     if(logger.isDebugEnabled) {
       logger.debug(s"[NettyConnection-execute] Sending message ${m.body}")
     }
-    channel.flatMap { c =>
-      val p = Promise[Message]
-      registry.put(m.token, p)
-      c.writeAndFlush(m).addListener(new ChannelFutureListener {
-        def operationComplete(f: ChannelFuture) = {
-          if(!f.isSuccess()) {
-            p.tryFailure(f.cause())
-          }
-        }
-      })
-      p.future
+
+    def failOnTimeout(): F[Throwable] = {
+      T.sleep(context.config.readTimeoutMillis.millis).as(new Exception(s"query timeout after ${context.config.readTimeoutMillis} millis}")).map { e =>
+        println("timeout exceed")
+        e
+      }
     }
-  }
 
-  lazy val connectFuture = {
-    val address = new InetSocketAddress(config.host, config.port)
-    bootstrap().connect(address)
-  }
-
-  def connect() = {
-    logger.info(s"Open connection to ${config.host}:${config.port}")
-    connectFuture.awaitUninterruptibly()
+    val res = for {
+      c <- channel
+      _ <- F.delay(c.writeAndFlush(m))
+      d <- Deferred[F, Message]
+      _ <- F.delay(context.registry.put(m.token, d))
+      t <- F.start(failOnTimeout())
+      r <- F.race(t.join, d.get.flatTap(_ => t.cancel))
+    } yield r
+    res.flatTap { _ =>
+      F.delay(context.registry.remove(m.token))
+    }.rethrow
   }
 
   def close() = {
-    connectFuture.channel.close().awaitUninterruptibly
-  }
-
-  lazy val channel = {
-    for {
-      cf <- connectFuture.asScala
-      _ <- handshake.future
-    } yield cf.channel
-  }
-
-  private def bootstrap() = {
-    new Bootstrap()
-      .option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectTimeoutMills)
-      .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
-      .group(config.eventLoopGroup)
-      .channel(config.channelClass)
-      .handler(new ConnectionInitializer(context))
+    channel.map { c =>
+      c.close()
+    }
   }
 }
 
-object ChannelFutures {
-  implicit class ChannelFutureSyntax(val f: ChannelFuture) extends AnyVal {
-    def asScala = {
-      val p = Promise[ChannelFuture]
-      f.addListener(new  ChannelFutureListener {
-        override def operationComplete(f: ChannelFuture) = {
-          if(f.isSuccess()) {
-            p.success(f)
-          } else {
-            p.failure(f.cause())
-          }
+object NettyConnection {
+
+  private def bootstrap[F[_]](context: HandlerContext[F])(implicit F: Effect[F]) = {
+    new Bootstrap()
+      .option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, context.config.connectTimeoutMills)
+      .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
+      .group(context.config.eventLoopGroup)
+      .channel(context.config.channelClass)
+      .handler(new ConnectionInitializer(context))
+  }
+
+  def connect[F[_]](context: HandlerContext[F])(implicit F: ConcurrentEffect[F], T: Timer[F]) =  {
+    val remoteAddr = new InetSocketAddress(context.config.host, context.config.port)
+    bootstrap(context).connect(remoteAddr).addListener(new ChannelFutureListener {
+      override def operationComplete(f: ChannelFuture) = {
+        val thunk = if(f.isSuccess) {
+          context.channel.complete(Right(f.channel()))
+        } else {
+          context.channel.complete(Left(f.cause()))
         }
-      })
-      p.future
+        F.toIO(thunk).unsafeRunSync()
+      }
+    })
+    new NettyConnection[F](context)
+  }
+
+  def create[F[_]](config: NettyConnectionConfig)(implicit F: ConcurrentEffect[F], T: Timer[F]) = {
+    (Deferred[F, Either[Throwable, Channel]], Deferred[F, Either[Throwable, Boolean]]).mapN {
+      case (ch, h) =>
+        connect(HandlerContext(
+          config = config,
+          registry = new java.util.concurrent.ConcurrentHashMap[Long, Deferred[F, Message]],
+          handshake = h,
+          channel = ch
+        ))
     }
   }
+
 }

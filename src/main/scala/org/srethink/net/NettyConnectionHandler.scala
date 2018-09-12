@@ -1,24 +1,24 @@
 package org.srethink.net
 
+import cats.effect._
+import cats.effect.concurrent._
 import io.netty.channel._
 import io.netty.channel.socket._
+import java.util.concurrent.ConcurrentHashMap
 import org.slf4j._
-import scala.collection.concurrent.TrieMap
-import scala.concurrent._
-import scala.util._
 
-private case class HandlerContext(
+private case class HandlerContext[F[_]](
   config: NettyConnectionConfig,
-  registry: TrieMap[Long, Promise[Message]],
-  handshake: Promise[Boolean],
-  logger: Logger
+  registry: ConcurrentHashMap[Long, Deferred[F, Message]],
+  handshake: Deferred[F, Either[Throwable, Boolean]],
+  channel: Deferred[F, Either[Throwable, Channel]]
 )
 
-private class ConnectionHandler(context: HandlerContext) extends ChannelInboundHandlerAdapter {
+private class ConnectionHandler[F[_]](context: HandlerContext[F])(implicit F: Effect[F]) extends ChannelInboundHandlerAdapter {
   private val config = context.config
   private val registry = context.registry
   private val handshake = context.handshake
-  private val logger = context.logger
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   override def channelActive(ctx: ChannelHandlerContext) = {
     val ch = ctx.channel
@@ -37,36 +37,29 @@ private class ConnectionHandler(context: HandlerContext) extends ChannelInboundH
     msg match {
       case "SUCCESS" =>
         logger.info(s"Connected to ${config.host}:${config.port}")
-        handshake.tryComplete(Success(true))
+        F.toIO(handshake.complete(Right(true))).unsafeRunSync()
       case err: String =>
-        logger.info("handshake failure")
-        val ex = new Exception(err)
-        handshake.tryFailure(ex)
-        makeFail(ex)
+        F.toIO(handshake.complete(Left(new Exception(s"handshake error $err")))).unsafeRunSync()
         ctx.close()
       case m: Message =>
         if(logger.isDebugEnabled) {
-          logger.debug(s"Receiving message $msg")
+          logger.debug(s"Registry: ${registry}, receive ${m}, complete ${m.token}")
         }
-        registry.get(m.token).foreach(_.trySuccess(m))
-        registry.remove(m.token)
+        Option(registry.get(m.token)).foreach { defer =>
+          F.toIO(defer.complete(m)).unsafeRunSync()
+          println(s"completed ${m.token}")
+        }
     }
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     logger.warn("Uncaught exception, make all pending request fail", cause)
-    makeFail(cause)
     ctx.close()
-  }
-  private def makeFail(cause: Throwable) = {
-    for {
-      (k, v) <- registry if !v.isCompleted
-    } v.tryFailure(cause)
   }
 }
 
 
-class ConnectionInitializer(context: HandlerContext) extends  ChannelInitializer[SocketChannel] {
+class ConnectionInitializer[F[_]](context: HandlerContext[F])(implicit F: Effect[F]) extends  ChannelInitializer[SocketChannel] {
   val cfg = context.config
   override def initChannel(ch: SocketChannel): Unit = {
     val pipe = ch.pipeline()

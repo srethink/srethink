@@ -1,50 +1,46 @@
 package org.srethink.exec
 
-import java.util.concurrent.atomic.AtomicReference
+import cats.syntax.all._
+import cats.instances.vector._
+import cats.effect._
+import cats.effect.concurrent._
 import org.srethink.net._
-import org.slf4j._
-import scala.concurrent.Future
 
-
-trait ConnectionFactory {
+trait ConnectionFactory[F[_]] {
   val config: NettyConnectionConfig
-  def get(): Future[NettyConnection]
+  def get(): F[NettyConnection[F]]
 }
 
-class AutoReconnectConnectionFactory(val config: NettyConnectionConfig) extends ConnectionFactory {
+class DefaultConnectionFactory[F[_]](
+  val config: NettyConnectionConfig,
+  val holders: Ref[F, Vector[NettyConnection[F]]],
+)(implicit F: ConcurrentEffect[F], T: Timer[F]) extends ConnectionFactory[F] {
 
-  val logger = LoggerFactory.getLogger(classOf[AutoReconnectConnectionFactory])
-  val connRef = new AtomicReference[NettyConnection]()
-  implicit val ec = org.srethink.exec.trampoline
-
-
-  def get() = {
-    logger.debug("[Look up connections]")
-    val curr = connRef.get()
-    if(curr == null) {
-      Future.successful(putNewConn(null))
-    } else {
-      curr.closed.map {
-        case true =>
-          logger.info("Detected closed connection...")
-          putNewConn(curr)
-        case false =>
-          logger.debug("Offer active connection {}", curr)
-          curr
-      }.recover {
-        case _: Throwable => putNewConn(curr)
-      }
+  def get(): F[NettyConnection[F]] = {
+    holders.get.map { h =>
+      h(scala.util.Random.nextInt(h.size))
     }
   }
 
+  private def heal(c: NettyConnection[F]) = {
+    c.closed().flatMap {
+      case true =>
+        holders.update(hs => (hs.filter(_ != c))) *> NettyConnection.create(config).flatTap { c =>
+          holders.update(hs => hs :+ c)
+        }
+      case false =>
+        F.pure(c)
+    }
+  }
 
-  private def putNewConn(curr: NettyConnection) = {
-    logger.info(s"${System.identityHashCode(this)} -- Creating new connection...")
-    val newConn = new NettyConnection(config)
-    if(connRef.compareAndSet(curr,  newConn)) {
-      newConn.connect()
-      logger.info(s"${System.identityHashCode(this)} -- Created new connection")
-      newConn
-    } else connRef.get()
+}
+
+object ConnectionFactory {
+  def default[F[_]: ConcurrentEffect: Timer](size: Int, config: NettyConnectionConfig): F[ConnectionFactory[F]] = {
+    val cons = Vector.fill(size)(NettyConnection.create(config)).sequence
+    for {
+      hs <- cons
+      ref <- Ref[F].of(hs)
+    } yield new DefaultConnectionFactory[F](config, ref)
   }
 }

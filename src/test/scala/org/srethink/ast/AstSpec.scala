@@ -3,12 +3,9 @@ package org.srethink.ast
 import org.srethink._
 import org.scalatest._
 import org.srethink.net.RethinkSpec
-import scala.concurrent._
 
 trait AstSpec extends RethinkSpec with BeforeAndAfterAll {
 
-  def await[T](f: Future[T]) = Await.result(f, duration.Duration.Inf)
-  def ready[T](f: Future[T]) = Await.ready(f, duration.Duration.Inf)
   val databaseName = "test_db"
   val tableName = "book"
 
@@ -23,8 +20,8 @@ trait AstSpec extends RethinkSpec with BeforeAndAfterAll {
   }
 
   private def create() = {
-    ready(rdb.run(r.dbCreate(databaseName)))
-    ready(rdb.run(r.db(databaseName).tableCreate("book")))
+    rdb.run(r.dbCreate(databaseName)).attempt.unsafeRunSync()
+    rdb.run(r.db(databaseName).tableCreate("book")).attempt.unsafeRunSync()
   }
 
   private def drop() = {
