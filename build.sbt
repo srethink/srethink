@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.7"
 
 libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
@@ -26,7 +26,6 @@ scalacOptions ++= Seq(
   "-Ywarn-unused-import",
   "-Xfuture",
   "-Ywarn-dead-code",
-  "-Ydelambdafy:method",
   "-feature",
   "-deprecation",
   "-language:implicitConversions",
