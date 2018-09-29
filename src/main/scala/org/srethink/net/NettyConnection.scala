@@ -20,7 +20,7 @@ case class NettyConnectionConfig(
   protocol: Int = Protocol.JSON,
   authKey: String = "",
   connectTimeoutMills: Int = 3000,
-  readTimeoutMillis: Int = 10000,
+  readTimeoutMillis: Int = 30000,
   eventLoopGroup: EventLoopGroup = new NioEventLoopGroup(),
   channelClass: Class[_ <: Channel] = classOf[NioSocketChannel],
   charset: Charset = Charset.defaultCharset())
