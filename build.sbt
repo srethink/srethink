@@ -10,7 +10,7 @@ libraryDependencies ++= {
   Seq(
     "org.typelevel"     %% "cats-free"          % "1.3.1",
     "org.typelevel"     %% "cats-effect"        % "1.0.0",
-    "co.fs2"            %% "fs2-core"           % "1.0.0-RC1",
+    "co.fs2"            %% "fs2-core"           % "1.0.0",
     "io.circe"          %% "circe-core"         % circeV,
     "io.circe"          %% "circe-generic"      % circeV,
     "io.circe"          %% "circe-parser"       % circeV,
