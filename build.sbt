@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.7"
+scalaVersion := "2.12.8"
 
 libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
