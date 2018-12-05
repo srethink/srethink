@@ -8,9 +8,9 @@ libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
   val circeV = "0.10.0"
   Seq(
-    "org.typelevel"     %% "cats-free"          % "1.3.1",
-    "org.typelevel"     %% "cats-effect"        % "1.0.0",
-    "co.fs2"            %% "fs2-core"           % "1.0.0",
+    "org.typelevel"     %% "cats-free"          % "1.5.0",
+    "org.typelevel"     %% "cats-effect"        % "1.1.0",
+    "co.fs2"            %% "fs2-core"           % "1.0.1",
     "io.circe"          %% "circe-core"         % circeV,
     "io.circe"          %% "circe-generic"      % circeV,
     "io.circe"          %% "circe-parser"       % circeV,
