@@ -13,7 +13,7 @@ import org.slf4j._
 
 import scala.util.Try
 
-private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
+private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
 
   private val logger = LoggerFactory.getLogger("srethink.ast.exec")
 
@@ -43,35 +43,51 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     }
   }
 
-  private def repeatEvalFuture[A](f: => Future[A])(implicit executor: QueryExecutor): Stream[IO, A] = {
-    import executor.executionContext
+  private implicit def contextShift(implicit executor: QueryExecutor) =
+    IO.contextShift(executor.executionContext)
+
+  private def repeatEvalFuture[A](
+      f: => Future[A]
+  )(implicit executor: QueryExecutor): Stream[IO, A] = {
     Stream.eval(IO.fromFuture(IO(f))).repeat
   }
 
-  protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[IO, J] = {
-    import executor.executionContext
+  protected def execCursor(
+      query: J
+  )(implicit executor: QueryExecutor): Stream[IO, J] = {
     val (c, t) = executor.prepare()
     val start = IO.fromFuture(IO(startQuery(c, t, query)))
-    val rows = (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
-      case (t, rt, body) => rt == SUCCESS_PARTIAL
-    }.flatMap {
-      case (_, rt, body) =>
-        val docs = normalizeResult(rt, body)
-        Stream.emits(docs)
-    }
+    val rows = (Stream.eval(start) ++ repeatEvalFuture(continue(c, t)))
+      .takeThrough {
+        case (t, rt, body) => rt == SUCCESS_PARTIAL
+      }
+      .flatMap {
+        case (_, rt, body) =>
+          val docs = normalizeResult(rt, body)
+          Stream.emits(docs)
+      }
     import executor.executionContext
-    val stopEval = IO(stop(c, t).recover {
-      case ex: Throwable => logger.debug(s"Failed close cursor for token $t")
-    }.map(_ => {}))
-    Stream.bracket(IO.unit) (_ => IO.fromFuture(stopEval)) >> rows
+    val stopEval = IO(
+      stop(c, t)
+        .recover {
+          case ex: Throwable =>
+            logger.debug(s"Failed close cursor for token $t")
+        }
+        .map(_ => {})
+    )
+    Stream.bracket(IO.unit)(_ => IO.fromFuture(stopEval)) >> rows
   }
 
-  private def startQuery(c: Connection, t: Long, query: J)(implicit executor: QueryExecutor) = {
+  private def startQuery(c: Connection, t: Long, query: J)(
+      implicit executor: QueryExecutor
+  ) = {
     import executor.executionContext
     executor.start(c, t, stringify(rStartQuery(query))).map(rethinkErrorHandler)
   }
 
-  private def continue(c: Connection, t: Long)(implicit executor: QueryExecutor) = {
+  private def continue(c: Connection, t: Long)(
+      implicit executor: QueryExecutor
+  ) = {
     import executor.executionContext
     executor.start(c, t, stringify(rContinueQuery())).map(rethinkErrorHandler)
   }
@@ -93,29 +109,36 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
       case (t, SUCCESS_ATOM, body) =>
         unapplyJsArray(body)(0)
       case (t, rt, body) =>
-        throw new RethinkException(s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${rt}")
+        throw new RethinkException(
+          s"wrong response type, expected: ${SUCCESS_SEQUENCE}, actual: ${rt}"
+        )
 
     }
   }
 
   private def normalizeResult(rt: J, body: J): Seq[J] = rt match {
     case SUCCESS_SEQUENCE => unapplyJsArray(body)
-    case SUCCESS_PARTIAL => unapplyJsArray(body)
-    case SUCCESS_ATOM => unapplyJsArray(unapplyJsArray(body)(0))
-    case _ => throw new RethinkException(s"wrong response type: ${rt}")
+    case SUCCESS_PARTIAL  => unapplyJsArray(body)
+    case SUCCESS_ATOM     => unapplyJsArray(unapplyJsArray(body)(0))
+    case _                => throw new RethinkException(s"wrong response type: ${rt}")
   }
 
   def decodeR[T: F](r: Future[J])(implicit executor: QueryExecutor) = {
     import executor.executionContext
     r.map(decode[T]).recoverWith {
-      case ex => r.flatMap { body =>
-        logger.info(s"error decode body", ex)
-        Future.failed(new RethinkException(s"error parsing body ${stringify(body)}"))
-      }
+      case ex =>
+        r.flatMap { body =>
+          logger.info(s"error decode body", ex)
+          Future.failed(
+            new RethinkException(s"error parsing body ${stringify(body)}")
+          )
+        }
     }
   }
 
-  def decodeStream[T: F](r: Stream[IO, J])(implicit executor: QueryExecutor): Stream[IO, T] = {
+  def decodeStream[T: F](
+      r: Stream[IO, J]
+  )(implicit executor: QueryExecutor): Stream[IO, T] = {
     import executor.executionContext
     r.evalMap { body =>
       IO.fromEither(Either.fromTry(Try(decode[T](body))))
