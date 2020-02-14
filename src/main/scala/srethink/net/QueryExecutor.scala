@@ -7,13 +7,14 @@ import scala.concurrent.ExecutionContext
 import srethink.json._
 import srethink.protocol.QueryConstant._
 import scala.concurrent.Future
-
+import cats.effect._
 
 trait QueryExecutor {
   val factory: ConnectionFactory
   val token = new AtomicLong()
 
   implicit val executionContext: ExecutionContext
+  implicit val cs: ContextShift[IO]
 
   final def start(query: String): Future[Response] = {
     val t = token.incrementAndGet()
@@ -41,6 +42,7 @@ trait QueryExecutor {
 
 class NettyQueryExecutor(config: NettyRethinkConfig) extends QueryExecutor {
   val executionContext = config.executionContext
+  val cs = config.cs
   val factory = new PooledConnectionFactory(config.poolSize)({
     new NettyConnection(config)
   })

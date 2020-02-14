@@ -8,6 +8,7 @@ import org.jboss.netty.util._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import srethink.protocol._
+import cats.effect._
 
 trait RethinkConfig {
   val hostname: String
@@ -17,6 +18,7 @@ trait RethinkConfig {
   val poolSize: Int
   val requestTimeout: FiniteDuration
   val connectTimeout: FiniteDuration
+  val cs: ContextShift[IO]
 }
 
 object RethinkConfig {
@@ -29,7 +31,7 @@ object RethinkConfig {
     requestTimeout: FiniteDuration = 1.minutes,
     connectTimeout: FiniteDuration = 3.seconds,
     timer: RethinkTimer = DefaultRethinkTimer
-  ) = {
+  )(implicit cs: ContextShift[IO]) = {
     NettyRethinkConfig(
       hostname = hostname,
       port = port,
@@ -56,4 +58,4 @@ case class NettyRethinkConfig(
   requestTimeout: FiniteDuration,
   connectTimeout: FiniteDuration,
   timer: RethinkTimer
-) extends RethinkConfig
+)(implicit val cs: ContextShift[IO]) extends RethinkConfig

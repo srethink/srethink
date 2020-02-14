@@ -186,6 +186,10 @@ private[ast] trait Terms[J, F[_]] extends JsonDef[J, F] {
     rTerm(UPDATE_VALUE, Seq(term, fields), options)
   }
 
+  def rReplace(term: J, obj: J,options: J = EmptyOpts) = {
+    rTerm(REPLACE_VALUE, Seq(term, obj), options)
+  }
+
   def rMax(term: J, field: String) = {
     rTerm(MAX_VALUE, Seq(term, field))
   }

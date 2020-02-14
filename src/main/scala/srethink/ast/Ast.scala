@@ -42,6 +42,12 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
   }
 
+  trait WithReplace { this: Ast =>
+    def replace(obj: J) = {
+      new EndAst(rReplace(term, obj))
+    }
+  }
+
   trait WithUpdate { this: Ast =>
     def update(fields: (String, J)*) = {
       new EndAst(rUpdate(term, jsObject(fields)))
@@ -80,7 +86,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
 
   }
 
-  class Selection(val term: J) extends Ast with WithUpdate {
+  class Selection(val term: J) extends Ast with WithUpdate with WithReplace {
     def map(f: Var => Expr) = {
       val doc = rVar(1)
       val func = rFunc(1, f(new Var(doc)).term)

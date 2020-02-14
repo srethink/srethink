@@ -8,7 +8,7 @@ import srethink.net._
 import srethink.ast._
 import srethink._
 import org.slf4j._
-import cats.effect.IO
+import cats.effect._
 
 import scala.util.Try
 
@@ -42,11 +42,12 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
     }
   }
 
-  private def repeatEvalFuture[A](f: => Future[A]): Stream[IO, A] = {
+  private def repeatEvalFuture[A](f: => Future[A])(implicit ec: ContextShift[IO]): Stream[IO, A] = {
     Stream.eval(IO.fromFuture(IO(f))) ++ repeatEvalFuture(f)
   }
 
   protected def execCursor(query: J)(implicit executor: QueryExecutor): Stream[IO, J] = {
+    import executor.{executionContext, cs}
     val (c, t) = executor.prepare()
     val rows = (Stream.eval(IO.fromFuture(IO(startQuery(c, t, query)))) ++ repeatEvalFuture(continue(c, t))).takeThrough {
       case (t, rt, body) => rt == SUCCESS_PARTIAL
@@ -55,7 +56,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F]  {
         val docs = normalizeResult(rt, body)
         Stream.emits(docs)
     }
-    import executor.executionContext
+
     rows.onFinalize(IO.fromFuture(IO(stop(c, t).map(_ => {}).recover {
       case ex: Throwable => logger.info(s"[RethinkOp-execCursor] Close stream with token $t failed")
     })))
