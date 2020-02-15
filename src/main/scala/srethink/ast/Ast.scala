@@ -43,8 +43,8 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
   }
 
   trait WithReplace { this: Ast =>
-    def replace(obj: J) = {
-      new EndAst(rReplace(term, obj))
+    def replace[A: F](obj: A): EndAst = {
+      new EndAst(rReplace(term, transformArray(encode(obj))))
     }
   }
 

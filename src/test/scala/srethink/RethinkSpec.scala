@@ -2,17 +2,17 @@ package srethink
 
 import cats.syntax.all._
 import cats.instances.future._
-import cats.effect.Sync
+import cats.effect._
 import scala.concurrent.{Future, ExecutionContext}
 import org.specs2.mutable.Specification
 import org.specs2.specification._
 import play.api.libs.json.{Format, Json, Writes}
 import srethink.net._
 import play.api.rql._
-
-
+import scala.concurrent.ExecutionContext.global
 
 object Executors {
+  private implicit val cs = IO.contextShift(global)
   val executor = new NettyQueryExecutor(RethinkConfig.nettyConfig())
 }
 
