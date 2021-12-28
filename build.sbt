@@ -2,15 +2,16 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.15"
 
 libraryDependencies ++= {
-  val nettyV = "4.1.32.Final"
-  val circeV = "0.10.1"
+  val nettyV = "4.1.72.Final"
+  val circeV = "0.11.1"
   Seq(
-    "org.typelevel"     %% "cats-free"          % "1.5.0",
-    "org.typelevel"     %% "cats-effect"        % "1.1.0",
-    "co.fs2"            %% "fs2-core"           % "1.0.2",
+
+    "org.typelevel"     %% "cats-free"          % "2.4.2",
+    "org.typelevel"     %% "cats-effect"        % "2.5.4",
+    "co.fs2"            %% "fs2-core"           % "2.5.10",
     "io.circe"          %% "circe-core"         % circeV,
     "io.circe"          %% "circe-generic"      % circeV,
     "io.circe"          %% "circe-parser"       % circeV,
@@ -21,6 +22,8 @@ libraryDependencies ++= {
     "org.scalatest"     %% "scalatest"          % "3.0.0"      % "test",
     "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
 }
+
+ThisBuild / libraryDependencySchemes += "org.typelevel" %% "cats-core" % "always"
 
 scalacOptions ++= Seq(
   "-Ywarn-unused-import",
