@@ -2,15 +2,15 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.7"
+scalaVersion := "2.12.15"
 
 libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
-  val circeV = "0.10.0"
+  val circeV = "0.11.1"
   Seq(
-    "org.typelevel"     %% "cats-free"          % "1.5.0",
-    "org.typelevel"     %% "cats-effect"        % "1.1.0",
-    "co.fs2"            %% "fs2-core"           % "1.0.1",
+    "org.typelevel"     %% "cats-free"          % "2.6.1",
+    "org.typelevel"     %% "cats-effect"        % "2.5.4",
+    "co.fs2"            %% "fs2-core"           % "2.5.10",
     "io.circe"          %% "circe-core"         % circeV,
     "io.circe"          %% "circe-generic"      % circeV,
     "io.circe"          %% "circe-parser"       % circeV,
@@ -42,3 +42,4 @@ parallelExecution in Global := false
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 fork in test := true
+ThisBuild / evictionErrorLevel := Level.Warn
