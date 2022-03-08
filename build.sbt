@@ -4,6 +4,12 @@ name := "srethink"
 
 scalaVersion := "2.12.15"
 
+def circeV(scalaV: String) = {
+  if(scalaV.startsWith("2.11")) {
+    "0.11.1"
+  } else "0.12.3"
+}
+
 libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
   val circeV = "0.11.1"
