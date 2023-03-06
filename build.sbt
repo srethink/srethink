@@ -8,8 +8,6 @@ scalaVersion := "2.11.12"
 
 crossScalaVersions := Seq("2.11.12")
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
 libraryDependencies ++= {
   val playV = "2.5.12"
   val nettyV = "3.10.6.Final"
@@ -38,3 +36,5 @@ publishArtifact in Test := false
 parallelExecution in Global := false
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+ThisBuild / evictionErrorLevel := Level.Warn
