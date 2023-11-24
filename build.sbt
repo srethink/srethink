@@ -2,25 +2,26 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.15"
-
+scalaVersion := "2.12.18"
+val catsVersion = "2.10.0"
 libraryDependencies ++= {
-  val nettyV = "4.1.72.Final"
-  val circeV = "0.11.1"
+  val nettyV = "4.1.101.Final"
+  val circeV = "0.12.3"
   Seq(
-
-    "org.typelevel"     %% "cats-free"          % "2.4.2",
-    "org.typelevel"     %% "cats-effect"        % "2.5.4",
-    "co.fs2"            %% "fs2-core"           % "2.5.10",
-    "io.circe"          %% "circe-core"         % circeV,
-    "io.circe"          %% "circe-generic"      % circeV,
-    "io.circe"          %% "circe-parser"       % circeV,
-    "org.slf4j"         % "slf4j-api"           % "1.7.21",
-    "io.netty"          % "netty-transport"     % nettyV,
-    "io.netty"          % "netty-codec"         % nettyV,
-    "io.netty"          % "netty-handler"       % nettyV,
-    "org.scalatest"     %% "scalatest"          % "3.0.0"      % "test",
-    "org.slf4j"         % "slf4j-simple"        % "1.7.21"     % "test")
+    "org.typelevel" %% "cats-core"       % catsVersion,
+    "org.typelevel" %% "cats-free"       % catsVersion,
+    "org.typelevel" %% "cats-effect"     % "2.5.4",
+    "co.fs2"        %% "fs2-core"        % "2.5.10",
+    "io.circe"      %% "circe-core"      % circeV,
+    "io.circe"      %% "circe-generic"   % circeV,
+    "io.circe"      %% "circe-parser"    % circeV,
+    "org.slf4j"      % "slf4j-api"       % "2.0.9",
+    "io.netty"       % "netty-transport" % nettyV,
+    "io.netty"       % "netty-codec"     % nettyV,
+    "io.netty"       % "netty-handler"   % nettyV,
+    "org.scalatest" %% "scalatest"       % "3.0.0"  % "test",
+    "org.slf4j"      % "slf4j-simple"    % "1.7.21" % "test"
+  )
 }
 
 ThisBuild / libraryDependencySchemes += "org.typelevel" %% "cats-core" % "always"
