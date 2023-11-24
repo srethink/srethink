@@ -21,7 +21,7 @@ object r extends Global {
 
   def dbDrop(name: String) = new DBDrop(name)
 
-  def executor[F[_]: ConcurrentEffect: Timer](cfg: Config = new NettyConnectionConfig,
+  def executor[F[_]: Async](cfg: Config = new NettyConnectionConfig,
     dateTimeFormat: String = "yyyy-MM-dd HH:mm:ss",
     timezone: String = "+00:00") = {
     ConnectionFactory.default[F](16, cfg).map { factory =>

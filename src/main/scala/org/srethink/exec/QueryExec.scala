@@ -19,10 +19,10 @@ case class ExecConfig[F[_]](
   dateTimeFormat: String = "yyyy-MM-dd HH:mm:ss",
   timezone: String)
 
-class QueryExec[F[_]: ConcurrentEffect](val config: ExecConfig[F]) {
+class QueryExec[F[_]: Async](val config: ExecConfig[F]) {
   val tg = new AtomicLong(0)
   def execute(json: Json) = {
-    val msg = json.pretty(Printer.noSpaces.copy(dropNullValues = true))
+    val msg = json.printWith(Printer.noSpaces.copy(dropNullValues = true))
     val m = Message(tg.incrementAndGet(), msg)
     config.connectionFactory.get().flatMap(_.execute(m).map(_.body))
   }

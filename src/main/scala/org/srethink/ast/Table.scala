@@ -12,7 +12,7 @@ case class Table(db: DB, name: String, options: Seq[Opt]) extends Sequence {
     Seq(db.term, Json.fromString(name)),
     options.map(_.pair))
 
-  def get[K: Encoder](key: K) = Get(this, key.asJson.encodeArray)
+  def get[K: Encoder](key: K) = Get(this, key.asJson.encodeArray())
 
   def getAll[K: Encoder](keys: Seq[K], options: Opt*) = GetAll(this, keys.map(_.asJson.encodeArray()), options)
 

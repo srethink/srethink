@@ -1,7 +1,6 @@
 package org.srethink.net
 
 import cats.effect._
-import cats.effect.concurrent._
 import io.netty.channel._
 import io.netty.channel.socket._
 import java.util.concurrent.ConcurrentHashMap
@@ -14,7 +13,7 @@ private case class HandlerContext[F[_]](
   channel: Deferred[F, Either[Throwable, Channel]]
 )
 
-private class ConnectionHandler[F[_]](context: HandlerContext[F])(implicit F: Effect[F]) extends ChannelInboundHandlerAdapter {
+private class ConnectionHandler[F[_]](context: HandlerContext[F])(implicit F: Async[F]) extends ChannelInboundHandlerAdapter {
   private val config = context.config
   private val registry = context.registry
   private val handshake = context.handshake

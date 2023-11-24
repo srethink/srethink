@@ -2,7 +2,6 @@ package org.srethink.net
 
 import cats.syntax.all._
 import cats.effect._
-import cats.effect.concurrent._
 import io.netty.bootstrap._
 import io.netty.channel._
 import io.netty.channel.nio._
@@ -28,7 +27,7 @@ case class NettyConnectionConfig(
 
 class NettyConnection[F[_]](
   context: HandlerContext[F]
-)(implicit F: ConcurrentEffect[F], T: Timer[F]) extends Connection[F] {
+)(implicit F: Async[F]) extends Connection[F] {
 
 
   private val logger = LoggerFactory.getLogger(classOf[NettyConnection[F]])
@@ -42,7 +41,7 @@ class NettyConnection[F[_]](
     }
 
     def failOnTimeout(): F[Throwable] = {
-      T.sleep(context.config.readTimeoutMillis.millis).as(new Exception(s"query timeout after ${context.config.readTimeoutMillis} millis}")).map { e =>
+      F.sleep(context.config.readTimeoutMillis.millis).as(new Exception(s"query timeout after ${context.config.readTimeoutMillis} millis}")).map { e =>
         println("timeout exceed")
         e
       }
@@ -70,7 +69,7 @@ class NettyConnection[F[_]](
 
 object NettyConnection {
 
-  private def bootstrap[F[_]](context: HandlerContext[F])(implicit F: Effect[F]) = {
+  private def bootstrap[F[_]](context: HandlerContext[F])(implicit F: Async[F]) = {
     new Bootstrap()
       .option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, context.config.connectTimeoutMills)
       .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
@@ -79,7 +78,7 @@ object NettyConnection {
       .handler(new ConnectionInitializer(context))
   }
 
-  def connect[F[_]](context: HandlerContext[F])(implicit F: ConcurrentEffect[F], T: Timer[F]) =  {
+  def connect[F[_]](context: HandlerContext[F])(implicit F: Async[F]) =  {
     val remoteAddr = new InetSocketAddress(context.config.host, context.config.port)
     bootstrap(context).connect(remoteAddr).addListener(new ChannelFutureListener {
       override def operationComplete(f: ChannelFuture) = {
@@ -94,7 +93,7 @@ object NettyConnection {
     new NettyConnection[F](context)
   }
 
-  def create[F[_]](config: NettyConnectionConfig)(implicit F: ConcurrentEffect[F], T: Timer[F]) = {
+  def create[F[_]](config: NettyConnectionConfig)(implicit F: Async[F]) = {
     (Deferred[F, Either[Throwable, Channel]], Deferred[F, Either[Throwable, Boolean]]).mapN {
       case (ch, h) =>
         connect(HandlerContext(

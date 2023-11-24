@@ -3,7 +3,6 @@ package org.srethink.exec
 import cats.syntax.all._
 import cats.instances.vector._
 import cats.effect._
-import cats.effect.concurrent._
 import org.srethink.net._
 
 trait ConnectionFactory[F[_]] {
@@ -14,7 +13,7 @@ trait ConnectionFactory[F[_]] {
 class DefaultConnectionFactory[F[_]](
   val config: NettyConnectionConfig,
   val holders: Ref[F, Vector[NettyConnection[F]]],
-)(implicit F: ConcurrentEffect[F], T: Timer[F]) extends ConnectionFactory[F] {
+)(implicit F: Async[F]) extends ConnectionFactory[F] {
 
   def get(): F[NettyConnection[F]] = {
     holders.get.map { h =>
@@ -36,7 +35,7 @@ class DefaultConnectionFactory[F[_]](
 }
 
 object ConnectionFactory {
-  def default[F[_]: ConcurrentEffect: Timer](size: Int, config: NettyConnectionConfig): F[ConnectionFactory[F]] = {
+  def default[F[_]: Async](size: Int, config: NettyConnectionConfig): F[ConnectionFactory[F]] = {
     val cons = Vector.fill(size)(NettyConnection.create(config)).sequence
     for {
       hs <- cons
