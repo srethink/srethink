@@ -3,7 +3,7 @@ package play.api.rethink
 import java.util.Date
 import play.api.libs.json._
 import play.api.libs.json.{JsValue => JS}
-import play.api.data.validation.ValidationError
+import play.api.libs.json.JsonValidationError
 import srethink.ast._
 import srethink.protocol.TermConstant.MAKE_ARRAY_VALUE
 
@@ -33,7 +33,7 @@ trait PlayRethinkFormats {
   private val readRqlTime : (String, Double) => JsResult[Date] = {
     case (rqlType, epochTime) =>
       if(rqlType != "TIME") {
-        JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.rql_type to be TIME"))))
+        JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.rql_type to be TIME"))))
       } else {
         JsSuccess(new Date((epochTime * 1000).toLong))
       }

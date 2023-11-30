@@ -3,7 +3,7 @@ package srethink.ast
 import srethink._
 
 class OperatorsSpec extends RethinkOperatorSpec {
-  "rql" should {
+  test("rql") {
     testOp("add")(_.quantity + 1)(_.quantity + 1)
     testOp("sub")(_.quantity - 1)(_.quantity - 1)
     testOp("mul")(_.quantity * 10)(_.quantity * 10)

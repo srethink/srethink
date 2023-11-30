@@ -2,22 +2,28 @@ organization := "org.srethink"
 
 name := "srethink"
 
-version := "0.0.34-2.5"
-
 scalaVersion := "2.11.12"
 
-crossScalaVersions := Seq("2.11.12")
+crossScalaVersions := Seq("2.11.12", "2.12.18", "2.13.12")
+
+def playJsonV(v: String) = {
+  if (v.startsWith("2.11"))
+    "2.7.4"
+  else "2.10.3"
+
+}
 
 libraryDependencies ++= {
-  val playV = "2.5.12"
   val nettyV = "3.10.6.Final"
   Seq(
-    "io.netty"          % "netty"         % nettyV,
-    "co.fs2"            %% "fs2-core"     % "2.0.0",
-    "com.typesafe.play" %% "play-json"    % playV % "provided",
-    "org.specs2"        %% "specs2"       % "2.3.13" % "test",
-    "org.slf4j"         % "slf4j-api"     % "1.7.22" % "provided",
-    "org.slf4j"         % "slf4j-simple"  % "1.7.22" % "test"
+    "io.netty"           % "netty"    % nettyV,
+    "co.fs2"            %% "fs2-core" % "2.0.0",
+    "com.typesafe.play" %% "play-json" % playJsonV(
+      scalaVersion.value
+    )                % Provided,
+    "org.scalameta" %% "munit"        % "1.0.0-M10" % Test,
+    "org.slf4j"      % "slf4j-api"    % "1.7.22"    % "provided",
+    "org.slf4j"      % "slf4j-simple" % "1.7.22"    % "test"
   )
 }
 
@@ -30,8 +36,6 @@ scalacOptions ++= Seq(
   "-language:existentials",
   "-language:reflectiveCalls"
 )
-
-publishArtifact in Test := false
 
 parallelExecution in Global := false
 

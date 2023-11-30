@@ -43,7 +43,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
   def close() = channel.foreach { c =>
     c.close()
     c.getCloseFuture().awaitUninterruptibly()
-    markAllFail(new RethinkException("Connection already closed"))
+    markAllFail(new srethink.ast.RethinkException("Connection already closed"))
   }
 
   def isConnected = channel.map(_.isOpen).getOrElse(false)

@@ -18,19 +18,17 @@ class CursorSpec extends RethinkSpec with WithData {
     }
   }
 
-  "cursor" should {
-    "get all rows of table" in {
-      (for {
-        _ <- insert10000()
-        rs <- books.cursor[Book].compile.toVector.unsafeToFuture
-      } yield rs.size should be_== (10000)).await(100000)
-    }
+  test("get all rows of table") {
+    for {
+      _  <- insert10000()
+      rs <- books.cursor[Book].compile.toVector.unsafeToFuture
+    } yield assertEquals(rs.size, 10000)
+  }
 
-    "get one row" in {
-      (for {
-        _ <- books.insert(Seq(book(1))).run
-        rs <- books.cursor[Book].compile.toVector.unsafeToFuture
-      } yield rs should have size(1)).await(100000)
-    }
+  test("get one row") {
+    for {
+      _  <- books.insert(Seq(book(1))).run
+      rs <- books.cursor[Book].compile.toVector.unsafeToFuture
+    } yield assertEquals(rs.size, 1)
   }
 }

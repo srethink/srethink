@@ -17,7 +17,7 @@ trait PlayRQL extends AstDef[JsValue, Format] with PlayRethinkFormats {
 
   private val logger = LoggerFactory.getLogger(classOf[PlayRQL])
 
-  def jsArray(items: Seq[JsValue]) = new JsArray(items)
+  def jsArray(items: Seq[JsValue]) = new JsArray(items.toIndexedSeq)
   def jsObject(fields: Seq[(String, JsValue)]) = new JsObject(fields.toMap)
 
   def unapplyJsObject(obj: JsValue) = {
@@ -26,7 +26,7 @@ trait PlayRQL extends AstDef[JsValue, Format] with PlayRethinkFormats {
   }
   def unapplyJsArray(arr: JsValue): Seq[JsValue] = {
     val JsArray(ems) = arr
-    ems
+    ems.toSeq
   }
 
   def stringify(js: JsValue) = Json.stringify(js)
