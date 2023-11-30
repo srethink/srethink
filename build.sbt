@@ -2,7 +2,7 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "2.12.15"
+scalaVersion := "2.12.18"
 
 def circeV(scalaV: String) = {
   if(scalaV.startsWith("2.11")) {
@@ -12,14 +12,13 @@ def circeV(scalaV: String) = {
 
 libraryDependencies ++= {
   val nettyV = "4.0.56.Final"
-  val circeV = "0.11.1"
   Seq(
     "org.typelevel"     %% "cats-free"          % "2.6.1",
     "org.typelevel"     %% "cats-effect"        % "2.5.4",
     "co.fs2"            %% "fs2-core"           % "2.5.10",
-    "io.circe"          %% "circe-core"         % circeV,
-    "io.circe"          %% "circe-generic"      % circeV,
-    "io.circe"          %% "circe-parser"       % circeV,
+    "io.circe"          %% "circe-core"         % circeV(scalaVersion.value),
+    "io.circe"          %% "circe-generic"      % circeV(scalaVersion.value),
+    "io.circe"          %% "circe-parser"       % circeV(scalaVersion.value),
     "org.slf4j"         % "slf4j-api"           % "1.7.21",
     "io.netty"          % "netty-transport"     % nettyV,
     "io.netty"          % "netty-codec"         % nettyV,
