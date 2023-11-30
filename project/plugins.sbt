@@ -1,7 +1,1 @@
-resolvers += "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
-
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
-
-addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.0")
-
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.4")
+addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
