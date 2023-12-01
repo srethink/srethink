@@ -11,7 +11,7 @@ def circeV(scalaV: String) = {
 }
 
 libraryDependencies ++= {
-  val nettyV = "4.0.56.Final"
+  val nettyV = "4.1.101.Final"
   Seq(
     "org.typelevel"     %% "cats-free"          % "2.6.1",
     "org.typelevel"     %% "cats-effect"        % "2.5.4",
