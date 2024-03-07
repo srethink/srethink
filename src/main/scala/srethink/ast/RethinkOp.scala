@@ -18,14 +18,14 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   private val logger = LoggerFactory.getLogger("srethink.ast.exec")
 
   import srethink.protocol.ResponseConstant._
-  private val SUCCESS_ATOM     = jsNumber(SUCCESS_ATOM_VALUE)
+  private val SUCCESS_ATOM = jsNumber(SUCCESS_ATOM_VALUE)
   private val SUCCESS_SEQUENCE = jsNumber(SUCCESS_SEQUENCE_VALUE)
-  private val SUCCESS_PARTIAL  = jsNumber(SUCCESS_PARTIAL_VALUE)
-  private val SUCCESS_FEED     = jsNumber(SUCCESS_FEED_VALUE)
-  private val WAIT_COMPLETE    = jsNumber(WAIT_COMPLETE_VALUE)
-  private val CLIENT_ERROR     = jsNumber(CLIENT_ERROR_VALUE)
-  private val COMPILE_ERROR    = jsNumber(COMPILE_ERROR_VALUE)
-  private val RUNTIME_ERROR    = jsNumber(RUNTIME_ERROR_VALUE)
+  private val SUCCESS_PARTIAL = jsNumber(SUCCESS_PARTIAL_VALUE)
+  private val SUCCESS_FEED = jsNumber(SUCCESS_FEED_VALUE)
+  private val WAIT_COMPLETE = jsNumber(WAIT_COMPLETE_VALUE)
+  private val CLIENT_ERROR = jsNumber(CLIENT_ERROR_VALUE)
+  private val COMPILE_ERROR = jsNumber(COMPILE_ERROR_VALUE)
+  private val RUNTIME_ERROR = jsNumber(RUNTIME_ERROR_VALUE)
 
   private val rethinkErrorHandler: (Response => (Long, J, J)) = { r =>
     val fields = unapplyJsObject(parse(r.body))
@@ -47,44 +47,46 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     IO.contextShift(executor.executionContext)
 
   private def repeatEvalFuture[A](
-    f: => Future[A]
+      f: => Future[A]
   )(implicit executor: QueryExecutor): Stream[IO, A] = {
     Stream.eval(IO.fromFuture(IO(f))).repeat
   }
 
   protected def execCursor(
-    query: J
+      query: J
   )(implicit executor: QueryExecutor): Stream[IO, J] = {
     val (c, t) = executor.prepare()
-    val start  = IO.fromFuture(IO(startQuery(c, t, query)))
-    val rows =
-      (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
-        case (t, rt, body) => rt == SUCCESS_ATOM || rt == SUCCESS_SEQUENCE
-      }.flatMap {
+    val start = IO.fromFuture(IO(startQuery(c, t, query)))
+    val rows = (Stream.eval(start) ++ repeatEvalFuture(continue(c, t)))
+      .takeThrough {
+        case (t, rt, body) => rt == SUCCESS_PARTIAL
+      }
+      .flatMap {
         case (_, rt, body) =>
           val docs = normalizeResult(rt, body)
           Stream.emits(docs)
       }
     import executor.executionContext
     val stopEval = IO(
-      stop(c, t).recover {
-        case ex: Throwable =>
-          logger.debug(s"Failed close cursor for token $t")
-      }
+      stop(c, t)
+        .recover {
+          case ex: Throwable =>
+            logger.debug(s"Failed close cursor for token $t")
+        }
         .map(_ => {})
     )
     Stream.bracket(IO.unit)(_ => IO.fromFuture(stopEval)) >> rows
   }
 
-  private def startQuery(c: Connection, t: Long, query: J)(implicit
-    executor: QueryExecutor
+  private def startQuery(c: Connection, t: Long, query: J)(
+      implicit executor: QueryExecutor
   ) = {
     import executor.executionContext
     executor.start(c, t, stringify(rStartQuery(query))).map(rethinkErrorHandler)
   }
 
-  private def continue(c: Connection, t: Long)(implicit
-    executor: QueryExecutor
+  private def continue(c: Connection, t: Long)(
+      implicit executor: QueryExecutor
   ) = {
     import executor.executionContext
     executor.start(c, t, stringify(rContinueQuery())).map(rethinkErrorHandler)
@@ -118,7 +120,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     case SUCCESS_SEQUENCE => unapplyJsArray(body)
     case SUCCESS_PARTIAL  => unapplyJsArray(body)
     case SUCCESS_ATOM     => unapplyJsArray(unapplyJsArray(body)(0))
-    case _ => throw new RethinkException(s"wrong response type: ${rt}")
+    case _                => throw new RethinkException(s"wrong response type: ${rt}")
   }
 
   def decodeR[T: F](r: Future[J])(implicit executor: QueryExecutor) = {
@@ -135,7 +137,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   }
 
   def decodeStream[T: F](
-    r: Stream[IO, J]
+      r: Stream[IO, J]
   )(implicit executor: QueryExecutor): Stream[IO, T] = {
     import executor.executionContext
     r.evalMap { body =>
