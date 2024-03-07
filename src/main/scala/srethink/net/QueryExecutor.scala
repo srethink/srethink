@@ -22,7 +22,6 @@ trait QueryExecutor {
   }
 
   final def start(c: Connection, token: Long, query: String): Future[Response] = {
-    val c = factory.acquire()
     c.query(Query(token, query))
   }
 

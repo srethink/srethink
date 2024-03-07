@@ -63,6 +63,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
       }.flatMap {
         case (_, rt, body) =>
           val docs = normalizeResult(rt, body)
+          logger.info(s"[cursor] Receive batch size ${docs.size}")
           Stream.emits(docs)
       }
     import executor.executionContext
@@ -89,7 +90,9 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   ) = {
     logger.info(s"[RethinkOp] continue Query, token: ${t}")
     import executor.executionContext
-    executor.continue(c, t, stringify(rContinueQuery())).map(rethinkErrorHandler)
+    executor
+      .continue(c, t, stringify(rContinueQuery()))
+      .map(rethinkErrorHandler)
   }
 
   private def stop(c: Connection, t: Long)(implicit executor: QueryExecutor) = {
