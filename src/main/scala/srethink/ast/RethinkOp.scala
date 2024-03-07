@@ -64,7 +64,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
       .flatMap {
         case (_, rt, body) =>
           val docs = normalizeResult(rt, body)
-          Stream.chunk(Chunk.seq(docs))
+          Stream.emits(docs)
       }
     import executor.executionContext
     val stopEval = IO(
