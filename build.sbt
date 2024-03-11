@@ -2,17 +2,17 @@ organization := "org.srethink"
 
 name := "srethink"
 
-scalaVersion := "3.3.1"
+scalaVersion := "3.3.3"
 
-crossScalaVersions := Seq("2.12.18", "2.13.12", "3.3.1")
+crossScalaVersions := Seq("2.12.19", "2.13.13", "3.3.3")
 
 libraryDependencies ++= {
   val nettyV = "4.1.101.Final"
   val circeV = "0.14.6"
   Seq(
     "org.typelevel" %% "cats-free"       % "2.10.0",
-    "org.typelevel" %% "cats-effect"     % "3.5.2",
-    "co.fs2"        %% "fs2-core"        % "3.9.3",
+    "org.typelevel" %% "cats-effect"     % "3.5.4",
+    "co.fs2"        %% "fs2-core"        % "3.9.4",
     "io.circe"      %% "circe-core"      % circeV,
     "io.circe"      %% "circe-generic"   % circeV,
     "io.circe"      %% "circe-parser"    % circeV,
