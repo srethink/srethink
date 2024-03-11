@@ -7,13 +7,13 @@ import scala.collection.generic._
  */
 trait JsonDef[J, F[_]] {
 
-  implicit val booleanF: F[Boolean]
-  implicit val intF: F[Int]
-  implicit val longF: F[Long]
-  implicit val floatF: F[Float]
-  implicit val doubleF: F[Double]
-  implicit val stringF: F[String]
-  implicit val dateF: F[Date]
+  implicit def booleanF: F[Boolean]
+  implicit def intF: F[Int]
+  implicit def longF: F[Long]
+  implicit def floatF: F[Float]
+  implicit def doubleF: F[Double]
+  implicit def stringF: F[String]
+  implicit def dateF: F[Date]
   implicit def jsNumber(i: Long): J = encode(i)
   implicit def jsNumber(d: Double): J = encode(d)
   implicit def jsBool(b: Boolean): J = encode(b)
