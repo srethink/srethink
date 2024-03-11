@@ -186,7 +186,7 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
     }
   }
 
-  implicit def booleanAsExpr(b: Boolean) = new Expr(b)
+  implicit def booleanAsExpr(b: Boolean): Expr = new Expr(b)
   implicit def longAsExpr(i: Long): Expr = new Expr(i)
   implicit def stringAsExpr(s: String): Expr = new Expr(s)
   implicit def doubleAsExpr(d: Double): Expr = new Expr(d)

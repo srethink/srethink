@@ -1,7 +1,7 @@
 package srethink.net
 
 import scala.collection.concurrent.TrieMap
-import scala.concurrent.{Await, Promise, Future, duration}
+import scala.concurrent.{Await, Promise, Future, duration, ExecutionContext}
 import scala.concurrent.duration._
 import scala.util._
 import org.jboss.netty.bootstrap.ClientBootstrap
@@ -21,7 +21,7 @@ class RethinkTimer(val interval: FiniteDuration) {
   def newSchedule(delay: FiniteDuration)(f: () => Unit) = {
     timer.newTimeout(
       new TimerTask {
-        def run(timeout: Timeout) {
+        def run(timeout: Timeout) = {
           f()
         }
       },
@@ -39,7 +39,8 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
 
   private val logger  = LoggerFactory.getLogger(classOf[Connection])
   private val charset = java.nio.charset.Charset.defaultCharset()
-  private implicit val executionContext = config.executionContext
+  private implicit val executionContext: ExecutionContext =
+    config.executionContext
   @volatile
   private var channel     = None: Option[Channel]
   private val responseMap = TrieMap[Long, Promise[Response]]()
@@ -61,7 +62,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       channel.get
         .write(query)
         .addListener(new ChannelFutureListener {
-          def operationComplete(f: ChannelFuture) {
+          def operationComplete(f: ChannelFuture) = {
             if (!f.isSuccess()) {
               newPromise.tryComplete(Failure(f.getCause()))
             }
@@ -89,7 +90,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     Await.ready(handshake.future, 3.seconds)
   }
 
-  private def markAllFail(ex: Throwable) {
+  private def markAllFail(ex: Throwable) = {
     logger.error("Error caught, set all futures to fail", ex)
     val keys = for ((k, v) <- responseMap if (!v.isCompleted)) yield {
       v.tryComplete(Failure(ex))
@@ -139,12 +140,15 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
     override def channelConnected(
       ctx: ChannelHandlerContext,
       e: ChannelStateEvent
-    ) {
+    ) = {
       prepareHandshake(ctx)
       sendHandshake(e.getChannel)
     }
 
-    override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+    override def messageReceived(
+      ctx: ChannelHandlerContext,
+      e: MessageEvent
+    ) = {
       e.getMessage match {
         case "SUCCESS" =>
           prepareQuery(ctx)
@@ -161,7 +165,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       }
     }
 
-    private def prepareQuery(ctx: ChannelHandlerContext) {
+    private def prepareQuery(ctx: ChannelHandlerContext) = {
       val pipeline = ctx.getPipeline()
       pipeline.replace(
         frameDecoderName,
@@ -176,7 +180,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       pipeline.addFirst(messageEncoderName, new QueryEncoder(charset))
     }
 
-    private def prepareHandshake(ctx: ChannelHandlerContext) {
+    private def prepareHandshake(ctx: ChannelHandlerContext) = {
       val pipeline = ctx.getPipeline()
       pipeline.addFirst(messageDecoderName, new StringDecoder)
       pipeline.addFirst(
@@ -185,7 +189,7 @@ class NettyConnection(val config: NettyRethinkConfig) extends Connection {
       )
     }
 
-    private def sendHandshake(channel: Channel) {
+    private def sendHandshake(channel: Channel) = {
       import config._
       val authKey = authenticationKey.getBytes("ascii")
       // 4 bytes magic, 4 bytes key length, 4 bytes protocol

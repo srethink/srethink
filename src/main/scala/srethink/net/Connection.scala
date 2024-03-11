@@ -7,11 +7,11 @@ trait Connection {
 
   val config: RethinkConfig
 
-  def connect()
+  def connect(): Unit
 
   def isConnected: Boolean
 
   def query(query: Query): Future[Response]
 
-  def close()
+  def close(): Unit
 }

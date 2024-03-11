@@ -61,16 +61,20 @@ trait PlayRethinkFormats {
     }
   }
 
-  lazy implicit val insertRFormat = Json.format[InsertResult]
-  lazy implicit val createRFormat = Json.format[CreateResult]
-  lazy implicit val dropRFormat   = Json.format[DropResult]
-  lazy implicit val deleteRFormat = Json.format[DeleteResult]
-  lazy implicit val updateRFormat = Json.format[UpdateResult]
-  lazy implicit val booleanF      = implicitly[Format[Boolean]]
-  lazy implicit val intF          = implicitly[Format[Int]]
-  lazy implicit val longF         = implicitly[Format[Long]]
-  lazy implicit val floatF        = implicitly[Format[Float]]
-  lazy implicit val doubleF       = implicitly[Format[Double]]
-  lazy implicit val stringF       = implicitly[Format[String]]
-  lazy implicit val dateF         = implicitly[Format[Date]]
+  lazy implicit val insertRFormat: Format[InsertResult] =
+    Json.format[InsertResult]
+  lazy implicit val createRFormat: Format[CreateResult] =
+    Json.format[CreateResult]
+  lazy implicit val dropRFormat: Format[DropResult] = Json.format[DropResult]
+  lazy implicit val deleteRFormat: Format[DeleteResult] =
+    Json.format[DeleteResult]
+  lazy implicit val updateRFormat: Format[UpdateResult] =
+    Json.format[UpdateResult]
+  val booleanF: Format[Boolean] = implicitly[Format[Boolean]]
+  val intF: Format[Int]         = implicitly[Format[Int]]
+  val longF: Format[Long]       = implicitly[Format[Long]]
+  val floatF: Format[Float]     = implicitly[Format[Float]]
+  val doubleF: Format[Double]   = implicitly[Format[Double]]
+  val stringF: Format[String]   = implicitly[Format[String]]
+  val dateF: Format[Date]       = implicitly[Format[Date]]
 }

@@ -43,9 +43,6 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     }
   }
 
-  private implicit def contextShift(implicit executor: QueryExecutor) =
-    IO.contextShift(executor.executionContext)
-
   private def repeatEvalFuture[A](
     f: => Future[A]
   )(implicit executor: QueryExecutor): Stream[IO, A] = {
