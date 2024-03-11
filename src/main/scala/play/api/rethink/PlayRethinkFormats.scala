@@ -70,11 +70,11 @@ trait PlayRethinkFormats {
     Json.format[DeleteResult]
   lazy implicit val updateRFormat: Format[UpdateResult] =
     Json.format[UpdateResult]
-  val booleanF: Format[Boolean] = implicitly[Format[Boolean]]
-  val intF: Format[Int]         = implicitly[Format[Int]]
-  val longF: Format[Long]       = implicitly[Format[Long]]
-  val floatF: Format[Float]     = implicitly[Format[Float]]
-  val doubleF: Format[Double]   = implicitly[Format[Double]]
-  val stringF: Format[String]   = implicitly[Format[String]]
-  val dateF: Format[Date]       = implicitly[Format[Date]]
+  lazy val booleanF: Format[Boolean] = Format.GenericFormat[Boolean]
+  lazy val intF: Format[Int]         = Format.GenericFormat[Int]
+  lazy val longF: Format[Long]       = Format.GenericFormat[Long]
+  lazy val floatF: Format[Float]     = Format.GenericFormat[Float]
+  lazy val doubleF: Format[Double]   = Format.GenericFormat[Double]
+  lazy val stringF: Format[String]   = Format.GenericFormat[String]
+  lazy val dateF: Format[Date]       = Format.GenericFormat[Date]
 }
