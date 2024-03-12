@@ -57,11 +57,11 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     val rows =
       (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
         case (t, rt, body) => rt == SUCCESS_PARTIAL
-      }.map {
+      }.flatMap {
         case (_, rt, body) =>
           val docs = normalizeResult(rt, body)
           logger.info(s"[cursor] Receive batch size ${docs.size}")
-          Chunk.from(docs)
+          Stream.chunk(Chunk.from(docs))
       }
     import executor.executionContext
     val stopEval = IO(
@@ -71,7 +71,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
       }
         .map(_ => {})
     )
-    Stream.bracket(IO.unit)(_ => IO.fromFuture(stopEval)) >> rows.unchunks
+    Stream.bracket(IO.unit)(_ => IO.fromFuture(stopEval)) >> rows
   }
 
   private def startQuery(c: Connection, t: Long, query: J)(implicit
