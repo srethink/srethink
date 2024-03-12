@@ -52,18 +52,23 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   protected def execCursor(
     query: J
   )(implicit executor: QueryExecutor): Stream[IO, J] = {
+    import executor.executionContext
     val (c, t) = executor.prepare()
     val start  = IO.fromFuture(IO(startQuery(c, t, query)))
-    val rows =
-      (Stream.eval(start) ++ repeatEvalFuture(continue(c, t))).takeThrough {
-        case (t, rt, body) => rt == SUCCESS_PARTIAL
-      }.flatMap {
-        case (_, rt, body) =>
-          val docs = normalizeResult(rt, body)
-          logger.info(s"[cursor] Receive batch size ${docs.size}")
-          Stream.chunk(Chunk.from(docs))
-      }
-    import executor.executionContext
+    val rows = Stream.eval(start).flatMap {
+      case (t, rt, docs) =>
+        Stream.chunk(Chunk.from(normalizeResult(rt, docs))).covary[IO] ++ Stream
+          .unfoldChunkEval(rt) { irt =>
+            val hasMore = rt == SUCCESS_PARTIAL
+            if (hasMore) {
+              IO.fromFuture(IO(continue(c, t))).map {
+                case (_, nrt, ndocs) =>
+                  Some(Chunk.from(normalizeResult(nrt, ndocs)) -> nrt)
+              }
+            } else IO.pure(None)
+          }
+    }
+
     val stopEval = IO(
       stop(c, t).recover {
         case ex: Throwable =>
