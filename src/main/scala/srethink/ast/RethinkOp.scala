@@ -54,14 +54,16 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   )(implicit executor: QueryExecutor): Stream[IO, J] = {
     import executor.executionContext
     val (c, t) = executor.prepare()
-    val start  = IO.fromFuture(IO(startQuery(c, t, query)))
+    val start  = IO.fromFuture(IO.delay(startQuery(c, t, query)))
     val rows = Stream.eval(start).flatMap {
-      case (t, rt, docs) =>
-        Stream.chunk(Chunk.from(normalizeResult(rt, docs))).covary[IO] ++ Stream
-          .unfoldChunkEval(rt) { irt =>
+      case (t, initRt, docs) =>
+        Stream
+          .chunk(Chunk.from(normalizeResult(initRt, docs)))
+          .covary[IO] ++ Stream
+          .unfoldChunkEval(initRt) { rt =>
             val hasMore = rt == SUCCESS_PARTIAL
             if (hasMore) {
-              IO.fromFuture(IO(continue(c, t))).map {
+              IO.fromFuture(IO.delay(continue(c, t))).map {
                 case (_, nrt, ndocs) =>
                   Some(Chunk.from(normalizeResult(nrt, ndocs)) -> nrt)
               }
@@ -69,14 +71,14 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
           }
     }
 
-    val stopEval = IO(
+    val stopEval = IO.delay(
       stop(c, t).recover {
         case ex: Throwable =>
           logger.debug(s"Failed close cursor for token $t")
       }
         .map(_ => {})
     )
-    Stream.bracket(IO.unit)(_ => IO.fromFuture(stopEval)) >> rows
+    rows.onFinalize(IO.fromFuture(stopEval))
   }
 
   private def startQuery(c: Connection, t: Long, query: J)(implicit
