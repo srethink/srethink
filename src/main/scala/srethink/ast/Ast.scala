@@ -1,5 +1,7 @@
 package srethink.ast
 
+import fs2.Stream
+import cats.effect.IO
 import srethink.json._
 import srethink.net._
 import srethink._
@@ -37,7 +39,11 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       decodeR[T](run)
     }
 
-    def cursor[T: F](implicit executor: QueryExecutor) = {
+    def cursor(implicit executor: QueryExecutor): Stream[IO, J] = {
+      execCursor(term)
+    }
+
+    def cursorAs[T: F](implicit executor: QueryExecutor) = {
       decodeStream[T](execCursor(term))
     }
   }

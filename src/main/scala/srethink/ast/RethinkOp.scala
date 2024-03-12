@@ -147,7 +147,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     r: Stream[IO, J]
   )(implicit executor: QueryExecutor): Stream[IO, T] = {
     import executor.executionContext
-    r.evalMap { body =>
+    r.evalMapChunk { body =>
       IO.fromEither(Either.fromTry(Try(decode[T](body))))
     }
   }
