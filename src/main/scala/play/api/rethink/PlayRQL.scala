@@ -62,7 +62,7 @@ trait PlayRQL extends AstDef[JsValue, Format] with PlayRethinkFormats {
 
 
   private def aggregate[T: ClassTag](recs: Iterable[TailRec[T]]): TailRec[Seq[T]] = {
-    val init: Seq[T] = Array.empty[T]
+    val init: Seq[T] = Seq.empty[T]
     recs.foldLeft(done(init)) { (rsr, rr ) =>
       for {
         rs <- rsr

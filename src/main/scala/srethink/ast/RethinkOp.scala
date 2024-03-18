@@ -50,11 +50,12 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   }
 
   protected def execCursor(
-    query: J
+    query: J,
+    opts: Seq[(String, J)]
   )(implicit executor: QueryExecutor): Stream[IO, J] = {
     import executor.executionContext
     val (c, t) = executor.prepare()
-    val start  = IO.fromFuture(IO.delay(startQuery(c, t, query)))
+    val start  = IO.fromFuture(IO.delay(startQuery(c, t, query, opts)))
     val rows = Stream.eval(start).flatMap {
       case (t, initRt, docs) =>
         Stream
@@ -81,12 +82,12 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
     rows.onFinalize(IO.fromFuture(stopEval))
   }
 
-  private def startQuery(c: Connection, t: Long, query: J)(implicit
+  private def startQuery(c: Connection, t: Long, query: J, opts: Seq[(String, J)])(implicit
     executor: QueryExecutor
   ) = {
     import executor.executionContext
     logger.info(s"[RethinkOp] start Query, token: ${t}")
-    executor.start(c, t, stringify(rStartQuery(query))).map(rethinkErrorHandler)
+    executor.start(c, t, stringify(rStartQuery(query, opts))).map(rethinkErrorHandler)
   }
 
   private def continue(c: Connection, t: Long)(implicit
@@ -107,7 +108,7 @@ private[ast] trait RethinkOp[J, F[_]] extends Terms[J, F] {
   protected def exec(query: J)(implicit executor: QueryExecutor): Future[J] = {
     import executor.executionContext
     val (c, t) = executor.prepare()
-    startQuery(c, t, query).map {
+    startQuery(c, t, query, Seq.empty).map {
       case (token, SUCCESS_SEQUENCE, body) =>
         unapplyJsArray(body)
       case (token, SUCCESS_PARTIAL, body) =>

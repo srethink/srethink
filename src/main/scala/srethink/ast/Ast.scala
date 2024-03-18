@@ -39,12 +39,12 @@ trait AstDef[J, F[_]] extends RethinkOp[J, F] with Models {
       decodeR[T](run)
     }
 
-    def cursor(implicit executor: QueryExecutor): Stream[IO, J] = {
-      execCursor(term)
+    def cursor(opts: (String, J)*)(implicit executor: QueryExecutor): Stream[IO, J] = {
+      execCursor(term, opts)
     }
 
-    def cursorAs[T: F](implicit executor: QueryExecutor) = {
-      decodeStream[T](execCursor(term))
+    def cursorAs[T: F](opts: (String, J)*)(implicit executor: QueryExecutor) = {
+      decodeStream[T](execCursor(term, opts))
     }
   }
 
